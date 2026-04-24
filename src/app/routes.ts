@@ -103,6 +103,9 @@ const stub = (title: string, phase?: string) => ({
   Component: () => createElement(ComingSoon, { title, phase }),
 });
 
+// Base URL từ Vite (strip trailing slash). Trên GH Pages sẽ là "/stem", dev thì ""
+const routerBase = (import.meta.env.BASE_URL || "/").replace(/\/$/, "");
+
 export const router = createBrowserRouter([
   { path: "/login", Component: Login },
 
@@ -214,4 +217,4 @@ export const router = createBrowserRouter([
       },
     ],
   },
-]);
+], { basename: routerBase || undefined });
