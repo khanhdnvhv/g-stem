@@ -1,0 +1,304 @@
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 16px;
+  --background: #f8f9fc;
+  --foreground: #1a1d2e;
+  --card: #ffffff;
+  --card-foreground: #1a1d2e;
+  --popover: #ffffff;
+  --popover-foreground: #1a1d2e;
+  --primary: #990803;
+  --primary-foreground: #ffffff;
+  --secondary: #f0f2f7;
+  --secondary-foreground: #990803;
+  --muted: #e8ebf2;
+  --muted-foreground: #6b7194;
+  --accent: #c8a84e;
+  --accent-foreground: #990803;
+  --destructive: #d4183d;
+  --destructive-foreground: #ffffff;
+  --border: rgba(12, 45, 94, 0.12);
+  --input: transparent;
+  --input-background: #f3f4f8;
+  --switch-background: #cbced4;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: #990803;
+  --chart-1: #990803;
+  --chart-2: #c8a84e;
+  --chart-3: #2e86de;
+  --chart-4: #27ae60;
+  --chart-5: #e74c3c;
+  --radius: 0.625rem;
+  --sidebar: #7a0602;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #c8a84e;
+  --sidebar-primary-foreground: #3a1200;
+  --sidebar-accent: rgba(255,255,255,0.12);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255,255,255,0.15);
+  --sidebar-ring: #c8a84e;
+
+  /* ================================================================ */
+  /* STEM PLATFORM TOKENS                                              */
+  /* ================================================================ */
+  --stem-tech:     #2563eb;   /* xanh công nghệ — AI, software, Dev Portal */
+  --stem-lab:      #16a34a;   /* xanh phòng lab — equipment OK */
+  --stem-warning:  #f59e0b;   /* cam cảnh báo — warranty due, warning */
+  --stem-innovate: #7c3aed;   /* tím đổi mới — CT3, CT5, innovation */
+
+  /* 5 chương trình STEM */
+  --ct1: #64748b;   /* CT1 Tích hợp nội môn */
+  --ct2: #0891b2;   /* CT2 Liên môn */
+  --ct3: #7c3aed;   /* CT3 Đổi mới sáng tạo */
+  --ct4: #dc2626;   /* CT4 Robotic / AI / Trải nghiệm */
+  --ct5: #059669;   /* CT5 Nghiên cứu khoa học */
+
+  /* 3 gói phòng STEM */
+  --tier-minimum:  #94a3b8;
+  --tier-basic:    #2e86de;
+  --tier-advanced: #c8a84e;
+
+  /* Chất lượng dữ liệu "Đúng – Đủ – Sạch – Sống" */
+  --dq-correct:  #16a34a;
+  --dq-complete: #0891b2;
+  --dq-clean:    #7c3aed;
+  --dq-alive:    #f59e0b;
+
+  /* Loại tenant */
+  --tenant-supplier:    #990803;
+  --tenant-distributor: #c8a84e;
+  --tenant-school:      #2563eb;
+  --tenant-authority:   #7c3aed;
+}
+
+.dark {
+  --background: #0f1118;
+  --foreground: #e8eaf0;
+  --card: #181b26;
+  --card-foreground: #e8eaf0;
+  --popover: #181b26;
+  --popover-foreground: #e8eaf0;
+  --primary: #990803;
+  --primary-foreground: #ffffff;
+  --secondary: #252836;
+  --secondary-foreground: #e8eaf0;
+  --muted: #252836;
+  --muted-foreground: #8b8fa8;
+  --accent: #c8a84e;
+  --accent-foreground: #ffffff;
+  --destructive: #d4183d;
+  --destructive-foreground: #ffffff;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: transparent;
+  --input-background: #1e2130;
+  --switch-background: #3a3d4e;
+  --ring: #990803;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --chart-1: #b91c1c;
+  --chart-2: #c8a84e;
+  --chart-3: #5b9bd5;
+  --chart-4: #34d399;
+  --chart-5: #f87171;
+  --sidebar: #12080a;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #c8a84e;
+  --sidebar-primary-foreground: #3a1200;
+  --sidebar-accent: rgba(255,255,255,0.08);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255,255,255,0.1);
+  --sidebar-ring: #c8a84e;
+
+  /* STEM tokens — dark mode (giảm bão hòa để giữ contrast) */
+  --stem-tech:     #3b82f6;
+  --stem-lab:      #22c55e;
+  --stem-warning:  #fbbf24;
+  --stem-innovate: #a78bfa;
+
+  --ct1: #94a3b8;
+  --ct2: #22d3ee;
+  --ct3: #a78bfa;
+  --ct4: #f87171;
+  --ct5: #34d399;
+
+  --tier-minimum:  #cbd5e1;
+  --tier-basic:    #5b9bd5;
+  --tier-advanced: #e6c56b;
+
+  --dq-correct:  #22c55e;
+  --dq-complete: #22d3ee;
+  --dq-clean:    #a78bfa;
+  --dq-alive:    #fbbf24;
+
+  --tenant-supplier:    #e74c3c;
+  --tenant-distributor: #e6c56b;
+  --tenant-school:      #5b9bd5;
+  --tenant-authority:   #a78bfa;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* STEM semantic */
+  --color-stem-tech: var(--stem-tech);
+  --color-stem-lab: var(--stem-lab);
+  --color-stem-warning: var(--stem-warning);
+  --color-stem-innovate: var(--stem-innovate);
+
+  /* 5 chương trình */
+  --color-ct1: var(--ct1);
+  --color-ct2: var(--ct2);
+  --color-ct3: var(--ct3);
+  --color-ct4: var(--ct4);
+  --color-ct5: var(--ct5);
+
+  /* 3 gói phòng */
+  --color-tier-minimum: var(--tier-minimum);
+  --color-tier-basic: var(--tier-basic);
+  --color-tier-advanced: var(--tier-advanced);
+
+  /* Data quality 4Đ */
+  --color-dq-correct: var(--dq-correct);
+  --color-dq-complete: var(--dq-complete);
+  --color-dq-clean: var(--dq-clean);
+  --color-dq-alive: var(--dq-alive);
+
+  /* Tenant loại */
+  --color-tenant-supplier: var(--tenant-supplier);
+  --color-tenant-distributor: var(--tenant-distributor);
+  --color-tenant-school: var(--tenant-school);
+  --color-tenant-authority: var(--tenant-authority);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.15);
+    border-radius: 9999px;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+
+  .dark *::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .dark *::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .dark * {
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /**
+  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
+  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
+  */
+
+  html {
+    font-size: var(--font-size);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  h1 {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h2 {
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h3 {
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h4 {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  label {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  button {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  input {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-normal);
+    line-height: 1.5;
+  }
+}

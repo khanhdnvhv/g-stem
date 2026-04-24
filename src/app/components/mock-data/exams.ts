@@ -1,0 +1,98 @@
+import type { STEMExam } from "./types";
+
+/* ================================================================ */
+/*  STEM EXAMS — 10 kỳ thi các cấp                                   */
+/* ================================================================ */
+
+export const stemExams: STEMExam[] = [
+  {
+    id: "EX-001", name: "Kiểm tra CT1 — Đầu HK2 Tiểu học",
+    level: "school", gradeLevel: "Tiểu học 5",
+    programCodes: ["CT1"],
+    openAt: "2026-03-15T08:00:00Z", closeAt: "2026-03-15T09:30:00Z",
+    durationMinutes: 45, questionCount: 20,
+    organiser: "Trường Tiểu học Cầu Giấy",
+    status: "closed", totalParticipants: 145,
+  },
+  {
+    id: "EX-002", name: "Thi Học sinh giỏi STEM Q.1",
+    level: "district", gradeLevel: "THCS 8",
+    programCodes: ["CT2", "CT3"],
+    openAt: "2026-04-10T08:00:00Z", closeAt: "2026-04-10T10:30:00Z",
+    durationMinutes: 120, questionCount: 40,
+    organiser: "Phòng GD&ĐT Quận 1",
+    status: "closed", totalParticipants: 320,
+  },
+  {
+    id: "EX-003", name: "Kiểm tra CT4 Robotic — Giữa kỳ",
+    level: "school", gradeLevel: "THPT 10",
+    programCodes: ["CT4"],
+    openAt: "2026-04-20T13:30:00Z", closeAt: "2026-04-20T15:00:00Z",
+    durationMinutes: 90, questionCount: 30,
+    organiser: "Trường THPT Lê Hồng Phong",
+    status: "graded", totalParticipants: 85,
+  },
+  {
+    id: "EX-004", name: "Olympic STEM Hà Nội mở rộng",
+    level: "province", gradeLevel: "THCS 9",
+    programCodes: ["CT2", "CT4"],
+    openAt: "2026-05-05T08:00:00Z", closeAt: "2026-05-05T11:00:00Z",
+    durationMinutes: 150, questionCount: 50,
+    organiser: "Sở GD&ĐT Hà Nội",
+    status: "upcoming",
+  },
+  {
+    id: "EX-005", name: "Hackathon Robotic THPT 2026",
+    level: "province", gradeLevel: "THPT 11",
+    programCodes: ["CT4"],
+    openAt: "2026-05-20T08:00:00Z", closeAt: "2026-05-22T18:00:00Z",
+    durationMinutes: 2880, questionCount: 5,
+    organiser: "Sở GD&ĐT TP.HCM",
+    status: "upcoming",
+  },
+  {
+    id: "EX-006", name: "Cuộc thi NCKH HS THCS",
+    level: "national", gradeLevel: "THCS 9",
+    programCodes: ["CT5"],
+    openAt: "2026-06-01T08:00:00Z", closeAt: "2026-06-03T17:00:00Z",
+    durationMinutes: 2880, questionCount: 1,
+    organiser: "Bộ GD&ĐT",
+    status: "upcoming",
+  },
+  {
+    id: "EX-007", name: "Kiểm tra Liên môn Toán-Lý HK2",
+    level: "school", gradeLevel: "THCS 8",
+    programCodes: ["CT2"],
+    openAt: "2026-04-25T08:00:00Z", closeAt: "2026-04-25T09:30:00Z",
+    durationMinutes: 90, questionCount: 30,
+    organiser: "Trường THCS Ba Vì",
+    status: "open", totalParticipants: 120,
+  },
+  {
+    id: "EX-008", name: "Đánh giá năng lực AI cuối khoá",
+    level: "school", gradeLevel: "THPT 12",
+    programCodes: ["CT4", "CT5"],
+    openAt: "2026-05-15T08:00:00Z", closeAt: "2026-05-15T11:00:00Z",
+    durationMinutes: 180, questionCount: 60,
+    organiser: "Trường THPT Chuyên Ngoại ngữ",
+    status: "upcoming",
+  },
+  {
+    id: "EX-009", name: "Giao hữu STEM THPT Nghề",
+    level: "district", gradeLevel: "THPT Nghề",
+    programCodes: ["CT4"],
+    openAt: "2026-06-10T08:00:00Z", closeAt: "2026-06-10T12:00:00Z",
+    durationMinutes: 240, questionCount: 20,
+    organiser: "Phòng GD&ĐT TP Nha Trang",
+    status: "upcoming",
+  },
+  {
+    id: "EX-010", name: "Giải Sáng tạo STEM Quốc gia",
+    level: "national", gradeLevel: "THPT 11",
+    programCodes: ["CT3", "CT5"],
+    openAt: "2026-07-01T08:00:00Z", closeAt: "2026-07-05T17:00:00Z",
+    durationMinutes: 7200, questionCount: 3,
+    organiser: "Bộ GD&ĐT",
+    status: "upcoming",
+  },
+];
