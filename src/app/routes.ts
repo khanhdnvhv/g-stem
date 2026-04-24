@@ -13,6 +13,7 @@ import { Notifications } from "./components/Notifications";
 import { Messaging } from "./components/Messaging";
 import { Announcements } from "./components/Announcements";
 import { Dashboard as LegacyDashboard } from "./components/Dashboard";
+import { Quizzes as LegacyQuizzes } from "./components/Quizzes";
 
 // === Supplier — Phase 3 ==============================================
 import { SupplierDashboard } from "./components/stem/supplier/SupplierDashboard";
@@ -178,7 +179,7 @@ export const router = createBrowserRouter([
           { path: "teacher/training",                 Component: TeacherTrainingHub },
           { path: "teacher/classes",                  Component: StudentProgressTracker },
           { path: "teacher/grading",                  Component: StudentProgressTracker },
-          { path: "teacher/exams",                    ...stub("Kiểm tra & Đề thi", "Phase 5") },
+          { path: "teacher/exams",                    Component: LegacyQuizzes },
           { path: "teacher/equipment-check",          Component: ClassroomEquipmentCheck },
 
           /* ============ STUDENT ============ */
