@@ -5,7 +5,7 @@ import {
   Brain, CheckCircle2, AlertTriangle, Lightbulb, Building2,
   Send, RefreshCw, Sparkles,
 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 import {
   MOCK_SURVEYS, CATEGORY_CONFIG, STATUS_CONFIG,
   SV001_RATINGS, SV001_CHOICES, SV001_NPS, SV001_TEXT, SV001_TREND,

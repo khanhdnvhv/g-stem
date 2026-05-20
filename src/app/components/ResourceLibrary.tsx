@@ -15,7 +15,7 @@ import { useConfirm } from "./ConfirmDialog";
 import { EmptyState } from "./EmptyState";
 import { FileUploadZone } from "./shared/FileUploadZone";
 import { ContentPreview } from "./shared/ContentPreview";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 // ─── Types ───
 interface Resource {

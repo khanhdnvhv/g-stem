@@ -1,12 +1,13 @@
 import { useState } from "react";
 import {
-  Video, Image as ImageIcon, Upload, Search, Filter,
+  Video, Image as ImageIcon, Upload, Search, X,
   FileText, PlayCircle, Download, Trash2, Grid3x3, List,
 } from "lucide-react";
 import { stemPackages, STEM_IMAGES } from "../../mock-data/index";
 import { PageHeader } from "../ui/PageHeader";
 import { TierBadge } from "../ui/badges";
-import { toast } from "sonner";
+import { ConfirmDialog } from "../ui/ConfirmDialog";
+import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  MEDIA ASSET MANAGER — ảnh, video demo, tài liệu truyền thông    */
@@ -86,10 +87,73 @@ const TYPE_META = {
 } as const;
 
 export function MediaAssetManager() {
-  const [assets] = useState(buildAssets());
+  const [assets, setAssets] = useState(buildAssets());
   const [typeFilter, setTypeFilter] = useState<"all" | "image" | "video" | "document">("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [search, setSearch] = useState("");
+  const [uploadOpen, setUploadOpen] = useState(false);
+  /* Upload form */
+  const [upType, setUpType] = useState<"image" | "video" | "document">("image");
+  const [upTitle, setUpTitle] = useState("");
+  const [upUrl, setUpUrl] = useState("");
+  /* File chọn từ máy — File API */
+  const [upFile, setUpFile] = useState<{ name: string; sizeMB: number; objectUrl: string } | null>(null);
+
+  /* Map type → accept attribute cho file picker */
+  const acceptByType: Record<typeof upType, string> = {
+    image: "image/*",
+    video: "video/*",
+    document: ".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx",
+  };
+
+  const detectTypeFromFile = (file: File): typeof upType => {
+    if (file.type.startsWith("image/")) return "image";
+    if (file.type.startsWith("video/")) return "video";
+    return "document";
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const objectUrl = URL.createObjectURL(file);
+    setUpFile({
+      name: file.name,
+      sizeMB: +(file.size / (1024 * 1024)).toFixed(2),
+      objectUrl,
+    });
+    /* Auto-fill: tên + loại theo file thực */
+    if (!upTitle.trim()) setUpTitle(file.name);
+    setUpType(detectTypeFromFile(file));
+  };
+
+  const resetUploadForm = () => {
+    setUpTitle(""); setUpUrl(""); setUpFile(null);
+  };
+
+  const handleUpload = () => {
+    if (upTitle.trim().length < 3) return;
+    setAssets((prev) => [{
+      id: `UP-${Date.now()}`,
+      type: upType,
+      title: upTitle.trim(),
+      url: upFile?.objectUrl || upUrl.trim() || (upType === "image" ? STEM_IMAGES[0] : "/uploads/new"),
+      sizeMB: upFile?.sizeMB ?? (upType === "video" ? 45 : upType === "document" ? 2.5 : 1.8),
+      uploadedAt: new Date().toISOString(),
+    }, ...prev]);
+    toast.success(`Đã tải lên "${upTitle.trim()}"`);
+    resetUploadForm();
+    setUploadOpen(false);
+  };
+
+  /* Xóa — qua ConfirmDialog */
+  const [deleteTarget, setDeleteTarget] = useState<MediaAsset | null>(null);
+
+  const confirmDelete = () => {
+    if (!deleteTarget) return;
+    setAssets((prev) => prev.filter((a) => a.id !== deleteTarget.id));
+    toast.info(`Đã xóa "${deleteTarget.title}"`);
+    setDeleteTarget(null);
+  };
 
   const filtered = assets.filter((a) => {
     if (typeFilter !== "all" && a.type !== typeFilter) return false;
@@ -112,7 +176,7 @@ export function MediaAssetManager() {
         subtitle="Quản lý ảnh, video demo, tài liệu truyền thông cho các gói phòng STEM"
         actions={
           <button
-            onClick={() => toast.success("Mở hộp thoại upload — accept ảnh/video/PDF")}
+            onClick={() => setUploadOpen(true)}
             className="flex items-center gap-1.5 px-3 py-2 bg-[#990803] text-white rounded-lg hover:bg-[#7a0602] transition-colors"
             style={{ fontSize: "13px", fontWeight: 500 }}
           >
@@ -243,7 +307,7 @@ export function MediaAssetManager() {
                       <Download className="w-4 h-4 text-foreground" />
                     </button>
                     <button
-                      onClick={() => toast.error(`Yêu cầu xóa ${a.title}`)}
+                      onClick={() => setDeleteTarget(a)}
                       className="p-2 bg-white rounded-full hover:scale-110 transition-transform"
                       title="Xóa"
                     >
@@ -296,15 +360,142 @@ export function MediaAssetManager() {
                     <td className="px-4 py-2.5 text-muted-foreground" style={{ fontSize: "12px" }}>{a.sizeMB.toFixed(1)} MB</td>
                     <td className="px-4 py-2.5 text-muted-foreground" style={{ fontSize: "12px" }}>{a.uploadedAt.split("T")[0]}</td>
                     <td className="px-4 py-2.5 text-right">
-                      <button className="p-1.5 hover:bg-secondary rounded" title="Tải">
-                        <Download className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center justify-end gap-1">
+                        <button onClick={() => toast.info(`Đang tải ${a.title}`)}
+                          className="p-1.5 hover:bg-secondary rounded" title="Tải">
+                          <Download className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => setDeleteTarget(a)}
+                          className="p-1.5 hover:bg-secondary rounded" title="Xóa">
+                          <Trash2 className="w-4 h-4 text-muted-foreground hover:text-[#dc2626]" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
+        </div>
+      )}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Xóa media"
+        message="Asset này sẽ bị xóa khỏi thư viện. Hành động không thể hoàn tác."
+        itemName={deleteTarget?.title}
+        onConfirm={confirmDelete}
+        onClose={() => setDeleteTarget(null)}
+      />
+
+      {/* Upload dialog */}
+      {uploadOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-card rounded-2xl border border-border shadow-2xl w-full max-w-md overflow-hidden">
+            <div className="flex items-center gap-2 px-5 py-3.5 border-b border-border">
+              <Upload className="w-5 h-5 text-[#990803]" />
+              <h2 className="flex-1" style={{ fontSize: "15px", fontWeight: 700 }}>Tải lên Media</h2>
+              <button onClick={() => { resetUploadForm(); setUploadOpen(false); }} className="p-1.5 rounded-md hover:bg-secondary text-muted-foreground">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="px-5 py-4 space-y-3">
+              <div>
+                <label className="block text-muted-foreground mb-1.5" style={{ fontSize: "12px", fontWeight: 600 }}>Loại media</label>
+                <div className="flex gap-1.5">
+                  {(Object.keys(TYPE_META) as Array<keyof typeof TYPE_META>).map((k) => {
+                    const meta = TYPE_META[k];
+                    const active = upType === k;
+                    return (
+                      <button key={k} onClick={() => setUpType(k)}
+                        className={`flex-1 flex items-center justify-center gap-1 px-2 py-2 rounded-lg border ${
+                          active ? "text-white border-transparent" : "bg-card border-border hover:bg-secondary"
+                        }`}
+                        style={{ fontSize: "11.5px", fontWeight: 500, ...(active ? { backgroundColor: meta.color } : {}) }}>
+                        <meta.icon className="w-3.5 h-3.5" /> {meta.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Vùng chọn file thật từ máy */}
+              <div>
+                <label className="block text-muted-foreground mb-1.5" style={{ fontSize: "12px", fontWeight: 600 }}>
+                  Chọn file từ máy
+                </label>
+                {upFile ? (
+                  <div className="flex items-center gap-2.5 p-2.5 bg-[#16a34a]/5 border border-[#16a34a]/30 rounded-lg">
+                    {upType === "image" ? (
+                      <img src={upFile.objectUrl} alt="" className="w-12 h-12 rounded object-cover shrink-0" />
+                    ) : (
+                      <div className="w-12 h-12 rounded bg-secondary flex items-center justify-center shrink-0">
+                        {upType === "video"
+                          ? <Video className="w-5 h-5 text-[#dc2626]" />
+                          : <FileText className="w-5 h-5 text-[#c8a84e]" />}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="truncate" style={{ fontSize: "12px", fontWeight: 600 }}>{upFile.name}</p>
+                      <p className="text-muted-foreground" style={{ fontSize: "10.5px" }}>
+                        {upFile.sizeMB} MB · đã đọc từ máy
+                      </p>
+                    </div>
+                    <button onClick={() => setUpFile(null)}
+                      className="p-1 text-muted-foreground hover:text-destructive shrink-0" title="Bỏ chọn">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <label
+                    className="flex flex-col items-center justify-center gap-1.5 py-5 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-[#990803]/40 hover:bg-secondary/40 transition-colors">
+                    <Upload className="w-7 h-7 text-muted-foreground/50" />
+                    <span className="text-muted-foreground" style={{ fontSize: "12px", fontWeight: 500 }}>
+                      Bấm để chọn file ({acceptByType[upType]})
+                    </span>
+                    <input
+                      type="file"
+                      accept={acceptByType[upType]}
+                      onChange={handleFileSelect}
+                      className="hidden"
+                    />
+                  </label>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-muted-foreground mb-1" style={{ fontSize: "12px", fontWeight: 600 }}>
+                  Tên hiển thị <span className="text-[#990803]">*</span>
+                </label>
+                <input value={upTitle} onChange={(e) => setUpTitle(e.target.value)}
+                  placeholder="VD: Brochure gói STEM 2026.pdf"
+                  className="w-full px-3 py-2 bg-input-background border border-border rounded-lg outline-none" style={{ fontSize: "13px" }} />
+              </div>
+
+              {/* URL — chỉ là cách thay thế nếu không chọn file */}
+              {!upFile && (
+                <div>
+                  <label className="block text-muted-foreground mb-1" style={{ fontSize: "12px", fontWeight: 600 }}>
+                    Hoặc dán URL (nếu không upload file)
+                  </label>
+                  <input value={upUrl} onChange={(e) => setUpUrl(e.target.value)}
+                    placeholder="https://... (để trống dùng placeholder)"
+                    className="w-full px-3 py-2 bg-input-background border border-border rounded-lg outline-none" style={{ fontSize: "13px" }} />
+                </div>
+              )}
+            </div>
+            <div className="flex justify-end gap-2 px-5 py-3 border-t border-border bg-secondary/20">
+              <button onClick={() => { resetUploadForm(); setUploadOpen(false); }}
+                className="px-3 py-1.5 border border-border rounded-lg hover:bg-secondary" style={{ fontSize: "12.5px" }}>
+                Hủy
+              </button>
+              <button onClick={handleUpload} disabled={upTitle.trim().length < 3}
+                className="flex items-center gap-1.5 px-4 py-1.5 bg-[#990803] text-white rounded-lg hover:bg-[#7a0602] disabled:opacity-40"
+                style={{ fontSize: "12.5px", fontWeight: 600 }}>
+                <Upload className="w-3.5 h-3.5" /> Tải lên
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

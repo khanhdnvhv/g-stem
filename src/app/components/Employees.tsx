@@ -10,7 +10,7 @@ import {
   GitBranch, Bell, Lock, Unlock, Edit3, Trash2, Info,
   ChevronDown, Check, BarChart3, Layers,
 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 import { exportToCSV } from "./ExportManager";
 import { mockEmployees, DEPARTMENTS, SUBSIDIARIES } from "./mock-data";
 import type { User } from "./mock-data";

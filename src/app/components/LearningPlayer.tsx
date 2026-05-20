@@ -22,7 +22,7 @@ import {
   ImageDown, FileDown, Upload,
 } from "lucide-react";
 import type { Lesson } from "./learning/types";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 import { OKR_SLIDES } from "./learning/lesson-content";
 
 /* ═══════════════════════════════════════════════════════════════ */

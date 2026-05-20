@@ -3,15 +3,16 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import {
   LogOut, Bell, Search, Menu, X, Settings as SettingsIcon,
   HelpCircle, PanelLeftClose, PanelLeftOpen, ChevronRight, ChevronDown,
-  Shield, User, Mail, Sun, Moon, Atom, GraduationCap,
+  Shield, User, Sun, Moon, Atom, GraduationCap,
 } from "lucide-react";
 import { mockNotifications } from "./mock-data";
 import { useAuth, roleLabelsMap, tenantTypeLabelsMap } from "./AuthContext";
 import { ChatbotPanel } from "./ChatbotPanel";
+import { OperationsProvider } from "../lib/OperationsContext";
 import { getUnreadCount } from "./notifications/mock-data";
 import { GlobalSearch } from "./GlobalSearch";
 import { useTheme } from "./ThemeContext";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 import { getNavGroups } from "./stem/nav-groups";
 
 /* ================================================================ */
@@ -86,7 +87,6 @@ const breadcrumbMap: Record<string, string> = {
   profile: "Hồ sơ",
   settings: "Cài đặt",
   notifications: "Thông báo",
-  messages: "Tin nhắn",
   announcements: "Bảng tin",
   "ai-buddy": "AI-Buddy",
 };
@@ -148,6 +148,7 @@ export function Layout() {
   const { theme, toggleTheme } = useTheme();
 
   return (
+    <OperationsProvider>
     <div className="flex flex-col h-screen overflow-hidden bg-background">
       {/* ======== FULL-WIDTH HEADER ======== */}
       <header className="h-14 shrink-0 flex items-center px-3 lg:px-4 gap-3 z-50 border-b border-border bg-card">
@@ -290,9 +291,6 @@ export function Layout() {
                 </div>
                 <Link to="/shared/profile" className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-secondary text-left transition-colors" style={{ fontSize: "13px" }} onClick={() => setShowUserMenu(false)}>
                   <User className="w-4 h-4" /> Hồ sơ Cá nhân
-                </Link>
-                <Link to="/shared/messages" className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-secondary text-left transition-colors" style={{ fontSize: "13px" }} onClick={() => setShowUserMenu(false)}>
-                  <Mail className="w-4 h-4" /> Tin nhắn
                 </Link>
                 <Link to="/shared/settings" className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-secondary text-left transition-colors" style={{ fontSize: "13px" }} onClick={() => setShowUserMenu(false)}>
                   <SettingsIcon className="w-4 h-4" /> Cài đặt
@@ -483,5 +481,6 @@ export function Layout() {
       <ChatbotPanel />
       <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
+    </OperationsProvider>
   );
 }

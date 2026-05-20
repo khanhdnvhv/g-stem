@@ -7,7 +7,7 @@ import { catalogs } from "../../mock-data/index";
 import type { CatalogItem } from "../../mock-data/index";
 import { PageHeader } from "../ui/PageHeader";
 import { KpiCard } from "../ui/KpiCard";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  COMMON CATALOG MANAGER — Danh mục dùng chung                    */

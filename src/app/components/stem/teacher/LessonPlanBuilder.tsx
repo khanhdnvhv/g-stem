@@ -1,13 +1,13 @@
 import { useState } from "react";
 import {
-  Lightbulb, Sparkles, Bot, BookOpen, Save, Send,
-  Plus, X, Wand2, CheckCircle2, GraduationCap,
+  Lightbulb, Sparkles, BookOpen, Save, Send,
+  Plus, X, Wand2, CheckCircle2,
 } from "lucide-react";
 import { STEM_PROGRAMS, GRADE_LEVELS, SUBJECTS } from "../../mock-data/index";
 import type { StemProgram } from "../../mock-data/index";
 import { PageHeader } from "../ui/PageHeader";
 import { ProgramBadge } from "../ui/badges";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  LESSON PLAN BUILDER — tích hợp AI-Buddy gợi ý soạn giáo án      */
@@ -63,7 +63,7 @@ export function LessonPlanBuilder() {
 
   const applyAiSuggestion = (suggestion: string) => {
     setTitle(suggestion);
-    toast.success("AI-Buddy đã gợi ý tiêu đề. Tiếp tục điền mục tiêu và hoạt động.");
+    toast.success("Đã áp dụng gợi ý mẫu. Tiếp tục điền mục tiêu và hoạt động.");
     setShowSuggestions(false);
   };
 
@@ -78,20 +78,15 @@ export function LessonPlanBuilder() {
     <div className="space-y-5 max-w-5xl mx-auto">
       <PageHeader
         icon={Lightbulb}
-        title="Soạn Giáo án — AI-Buddy hỗ trợ"
-        subtitle="Công cụ soạn giáo án STEM với gợi ý từ AI theo chương trình CT1–CT5 và mapping SGK Bộ GD&ĐT."
+        title="Soạn Giáo án STEM"
+        subtitle="Công cụ soạn giáo án STEM với mẫu gợi ý theo chương trình CT1–CT5 và mapping SGK Bộ GD&ĐT."
         accentColor="#7c3aed"
-        badge={
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#7c3aed]/15 text-[#7c3aed] rounded" style={{ fontSize: "11px", fontWeight: 600 }}>
-            <Bot className="w-3 h-3" /> AI-Buddy v1.5
-          </span>
-        }
         actions={
           <>
             <button onClick={() => setShowSuggestions(!showSuggestions)}
               className="flex items-center gap-1.5 px-3 py-2 bg-[#7c3aed] text-white rounded-lg hover:opacity-90"
               style={{ fontSize: "13px", fontWeight: 500 }}>
-              <Sparkles className="w-4 h-4" /> Gợi ý từ AI
+              <Sparkles className="w-4 h-4" /> Gợi ý mẫu
             </button>
             <button onClick={handleSave}
               className="flex items-center gap-1.5 px-3 py-2 border border-border bg-card rounded-lg hover:bg-secondary"
@@ -105,9 +100,9 @@ export function LessonPlanBuilder() {
       {showSuggestions && (
         <div className="bg-gradient-to-br from-[#7c3aed]/10 to-[#2563eb]/5 rounded-xl border border-[#7c3aed]/30 p-4">
           <div className="flex items-center gap-2 mb-3">
-            <Bot className="w-5 h-5 text-[#7c3aed]" />
+            <Sparkles className="w-5 h-5 text-[#7c3aed]" />
             <p style={{ fontSize: "13px", fontWeight: 700 }}>
-              AI-Buddy gợi ý 3 ý tưởng cho {programMeta.name}
+              3 mẫu gợi ý cho {programMeta.name}
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
@@ -245,7 +240,7 @@ function Section({
         ))}
         {items.length === 0 && (
           <p className="text-muted-foreground p-3 italic" style={{ fontSize: "11.5px" }}>
-            <Bot className="w-3.5 h-3.5 inline mr-1" /> AI gợi ý: {aiHint}
+            <Wand2 className="w-3.5 h-3.5 inline mr-1" /> Gợi ý: {aiHint}
           </p>
         )}
       </div>

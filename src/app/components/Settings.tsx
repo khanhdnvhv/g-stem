@@ -16,7 +16,7 @@ import {
   EyeOff,
   Check,
 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 import { useTheme } from "./ThemeContext";
 import { Sun, Moon, Monitor } from "lucide-react";
 

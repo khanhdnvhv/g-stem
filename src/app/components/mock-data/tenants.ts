@@ -19,6 +19,20 @@ export const tenants: Tenant[] = [
     onboardedAt: "2024-01-10T00:00:00Z",
   },
 
+  // === SUPPLIER 2 (Nexta Education — isolation demo AD-04) ===
+  {
+    id: "T-SUP-02", type: "supplier",
+    name: "Nexta Education",
+    code: "NXT-EDU",
+    address: "15 Phạm Hùng, Nam Từ Liêm, Hà Nội",
+    contactEmail: "contact@nexta-edu.vn",
+    contactPhone: "024 3556 8800",
+    licenseQuota: 100_000, licenseUsed: 22_450,
+    storageQuotaGB: 10_000, storageUsedGB: 1_800,
+    active: true,
+    onboardedAt: "2024-07-01T00:00:00Z",
+  },
+
   // === DISTRIBUTORS (3) ===
   {
     id: "T-DIS-01", type: "distributor",

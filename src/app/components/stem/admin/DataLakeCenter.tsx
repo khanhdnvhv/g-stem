@@ -11,7 +11,7 @@ import { dataSyncRecords, catalogs } from "../../mock-data/index";
 import { PageHeader } from "../ui/PageHeader";
 import { KpiCard } from "../ui/KpiCard";
 import { DataQualityBadge } from "../ui/badges";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  DATA LAKE CENTER — Đúng · Đủ · Sạch · Sống                      */

@@ -8,6 +8,7 @@ export const stemPackages: StemPackage[] = [
   {
     id: "PKG-MIN",
     tier: "minimum",
+    supplierTenantId: "T-SUP-01",
     name: "Gói STEM Tối thiểu",
     description:
       "Bộ dụng cụ STEM tại nhà hoặc tại lớp với chi phí thấp, phù hợp trường vùng sâu. " +
@@ -27,7 +28,7 @@ export const stemPackages: StemPackage[] = [
       { category: "Tài liệu",         name: "Sách hướng dẫn GV CT1",             quantity: 5,  unitPriceVND: 180_000 },
     ],
     includedSoftware: [
-      { name: "Geleximco STEM Explorer (Demo)", version: "1.0", licenseType: "per_device", seats: 10 },
+      { name: "Geleximco STEM Explorer (Demo)", version: "1.0", licenseType: "per_user", seats: 10 },
     ],
     configuration: {
       infrastructure: ["Không yêu cầu đặc biệt", "Góc học 6-8 m²"],
@@ -37,10 +38,19 @@ export const stemPackages: StemPackage[] = [
     },
     active: true,
     publishedAt: "2024-05-01T00:00:00Z",
+    status: "active",
+    packageType: "template",
+    equipmentCostVND: 20_060_000,
+    installationFeeVND: 2_000_000,
+    trainingDays: 1,
+    warrantyMonths: 12,
+    createdBy: "U-SUP-01",
+    approvedBy: "U-SUP-01",
   },
   {
     id: "PKG-BAS",
     tier: "basic",
+    supplierTenantId: "T-SUP-01",
     name: "Gói STEM Cơ bản",
     description:
       "Phòng Lab STEM 1 + Robotic cơ bản, đáp ứng CT1–CT2. " +
@@ -64,7 +74,7 @@ export const stemPackages: StemPackage[] = [
     ],
     includedSoftware: [
       { name: "Geleximco STEM Studio",   version: "2.1", licenseType: "per_user",   seats: 40 },
-      { name: "Robotic Programming IDE", version: "3.0", licenseType: "per_device", seats: 10 },
+      { name: "Robotic Programming IDE", version: "3.0", licenseType: "per_user", seats: 10 },
     ],
     configuration: {
       infrastructure: ["Phòng 40-60 m²", "Điện 3 pha", "Wifi AP riêng", "Bàn chống tĩnh điện"],
@@ -74,10 +84,19 @@ export const stemPackages: StemPackage[] = [
     },
     active: true,
     publishedAt: "2024-05-01T00:00:00Z",
+    status: "active",
+    packageType: "template",
+    equipmentCostVND: 98_500_000,
+    installationFeeVND: 5_000_000,
+    trainingDays: 2,
+    warrantyMonths: 24,
+    createdBy: "U-SUP-01",
+    approvedBy: "U-SUP-01",
   },
   {
     id: "PKG-ADV",
     tier: "advanced",
+    supplierTenantId: "T-SUP-01",
     name: "Gói STEM Nâng cao",
     description:
       "AI · IoT · Robotic — đồng hành 5 năm, đáp ứng CT3, CT4, CT5. " +
@@ -106,9 +125,9 @@ export const stemPackages: StemPackage[] = [
     ],
     includedSoftware: [
       { name: "Geleximco STEM Studio Pro", version: "3.2", licenseType: "per_user",   seats: 80 },
-      { name: "AI-Buddy Tutor",            version: "1.5", licenseType: "site",       seats: 0 },
-      { name: "IoT Platform",              version: "2.0", licenseType: "site",       seats: 0 },
-      { name: "Robotic AI Suite",          version: "4.0", licenseType: "per_device", seats: 14 },
+      { name: "Geleximco STEM Tutor",       version: "1.5", licenseType: "per_user",   seats: 80 },
+      { name: "IoT Platform",              version: "2.0", licenseType: "per_user",   seats: 80 },
+      { name: "Robotic Suite",             version: "4.0", licenseType: "per_user",   seats: 14 },
     ],
     configuration: {
       infrastructure: [
@@ -142,9 +161,178 @@ export const stemPackages: StemPackage[] = [
     },
     active: true,
     publishedAt: "2024-05-01T00:00:00Z",
+    status: "active",
+    packageType: "template",
+    equipmentCostVND: 590_000_000,
+    installationFeeVND: 15_000_000,
+    trainingDays: 5,
+    warrantyMonths: 36,
+    createdBy: "U-SUP-01",
+    approvedBy: "U-SUP-01",
+  },
+
+  /* ── Nexta Education packages — T-SUP-02 (isolation demo AD-04) ── */
+  {
+    id: "NXT-BAS",
+    tier: "basic",
+    supplierTenantId: "T-SUP-02",
+    name: "Nexta STEM Cơ bản",
+    description:
+      "Giải pháp phòng STEM của Nexta Education — tích hợp phần mềm LMS Nexta Cloud " +
+      "và bộ thiết bị Robotic riêng. Đáp ứng CT1–CT2 cho Tiểu học và THCS.",
+    priceVND: 165_000_000,
+    supportedGrades: ["Tiểu học", "THCS"],
+    supportedPrograms: ["CT1", "CT2"],
+    thumbnails: [
+      "https://images.unsplash.com/photo-1581093588401-fbb62a02f120?auto=format&fit=crop&w=800&q=80",
+    ],
+    includedEquipment: [
+      { category: "Robotic", name: "Bộ kit Nexta Bot",        quantity: 10, unitPriceVND: 3_800_000 },
+      { category: "Hiển thị", name: "Smart Board 65\" Nexta", quantity: 1,  unitPriceVND: 25_000_000 },
+      { category: "Tài liệu", name: "Sách giáo án Nexta CT1–CT2", quantity: 1, unitPriceVND: 4_000_000 },
+    ],
+    includedSoftware: [
+      { name: "Nexta Cloud LMS", version: "4.0", licenseType: "per_user", seats: 40 },
+    ],
+    configuration: {
+      infrastructure: ["Phòng 40-60 m²", "Wifi riêng"],
+      smartDevices: ["Smart Board 65\"", "Tablet × 10"],
+      furniture: ["Bàn nhóm × 5", "Tủ thiết bị"],
+      decoration: ["Poster Nexta STEM"],
+    },
+    active: true,
+    publishedAt: "2024-09-01T00:00:00Z",
+    status: "active",
+    packageType: "template",
+    equipmentCostVND: 91_000_000,
+    installationFeeVND: 4_000_000,
+    trainingDays: 2,
+    warrantyMonths: 24,
+    createdBy: "U-SUP-02",
+    approvedBy: "U-SUP-02",
+  },
+  {
+    id: "NXT-ADV",
+    tier: "advanced",
+    supplierTenantId: "T-SUP-02",
+    name: "Nexta STEM Nâng cao",
+    description:
+      "Gói cao cấp Nexta — AI + IoT tích hợp LMS Nexta Cloud. Đáp ứng CT3–CT5 cho THCS, THPT.",
+    priceVND: 620_000_000,
+    supportedGrades: ["THCS", "THPT"],
+    supportedPrograms: ["CT3", "CT4", "CT5"],
+    thumbnails: [
+      "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80",
+    ],
+    includedEquipment: [
+      { category: "Robotic AI", name: "Nexta Arm Robot Pro",       quantity: 2,  unitPriceVND: 55_000_000 },
+      { category: "AI Server",  name: "Nexta AI Workstation",       quantity: 1,  unitPriceVND: 90_000_000 },
+      { category: "IoT",        name: "Nexta IoT Starter Kit × 10", quantity: 10, unitPriceVND: 5_200_000 },
+      { category: "Drone",      name: "Nexta Drone EDU",            quantity: 3,  unitPriceVND: 22_000_000 },
+    ],
+    includedSoftware: [
+      { name: "Nexta Cloud LMS Pro",  version: "4.5", licenseType: "per_user", seats: 80 },
+      { name: "Nexta AI Studio",      version: "2.0", licenseType: "per_user", seats: 80 },
+    ],
+    configuration: {
+      infrastructure: ["Phòng 80-120 m²", "Mạng 1Gbps", "Điều hòa âm trần"],
+      smartDevices: ["Interactive Board 86\"", "Tablet × 30", "Camera AI"],
+      furniture: ["Bàn nhóm mô-đun × 8", "Tủ bảo quản thiết bị"],
+      decoration: ["Wall décor Nexta 5 CT", "Hall of Fame sản phẩm HS"],
+    },
+    active: true,
+    publishedAt: "2024-09-01T00:00:00Z",
+    status: "active",
+    packageType: "template",
+    equipmentCostVND: 538_000_000,
+    installationFeeVND: 12_000_000,
+    trainingDays: 4,
+    warrantyMonths: 36,
+    createdBy: "U-SUP-02",
+    approvedBy: "U-SUP-02",
+  },
+
+  /* ── Draft packages — demo vòng đời ── */
+  {
+    id: "PKG-DRAFT-01",
+    tier: "basic",
+    supplierTenantId: "T-SUP-01",
+    name: "Gói STEM Cơ bản v2 (Đang soạn)",
+    description:
+      "Phiên bản nâng cấp Gói Cơ bản — tích hợp thêm module IoT cơ bản và bộ cảm biến môi trường. " +
+      "Đáp ứng CT1–CT3, phù hợp THCS trường chuẩn quốc gia.",
+    priceVND: 210_000_000,
+    supportedGrades: ["Tiểu học", "THCS"],
+    supportedPrograms: ["CT1", "CT2", "CT3"],
+    thumbnails: [],
+    includedEquipment: [
+      { category: "Robotic", name: "Bộ robot lập trình cơ bản", quantity: 10, unitPriceVND: 4_500_000 },
+      { category: "IoT",     name: "Kit cảm biến IoT cơ bản",   quantity: 5,  unitPriceVND: 2_800_000 },
+      { category: "Hiển thị", name: "Smart TV 65\"",              quantity: 1,  unitPriceVND: 22_000_000 },
+    ],
+    includedSoftware: [
+      { name: "Geleximco STEM Studio", version: "2.2", licenseType: "per_user", seats: 40 },
+    ],
+    configuration: {
+      infrastructure: ["Phòng 40-60 m²", "Wifi AP riêng"],
+      smartDevices: ["Smart TV 65\"", "Tablet × 15"],
+      furniture: ["Bàn nhóm × 5", "Tủ dụng cụ"],
+      decoration: ["Decal 5 CT"],
+    },
+    active: false,
+    publishedAt: "",
+    status: "draft",
+    packageType: "template",
+    equipmentCostVND: 81_000_000,
+    installationFeeVND: 5_000_000,
+    trainingDays: 2,
+    warrantyMonths: 24,
+    createdBy: "U-SUP-01",
+  },
+  {
+    id: "PKG-WAIT-01",
+    tier: "advanced",
+    supplierTenantId: "T-SUP-01",
+    name: "Gói STEM Nâng cao — THPT Nghề",
+    description:
+      "Gói chuyên biệt cho khối THPT Nghề — tập trung vào thực hành nghề kỹ thuật, " +
+      "điện tử, cơ khí và lập trình nhúng. Đáp ứng CT4–CT5.",
+    priceVND: 450_000_000,
+    supportedGrades: ["THPT Nghề"],
+    supportedPrograms: ["CT4", "CT5"],
+    thumbnails: [],
+    includedEquipment: [
+      { category: "Cơ khí",   name: "Bộ thực hành cơ khí CNC cơ bản", quantity: 2, unitPriceVND: 85_000_000 },
+      { category: "Điện tử",  name: "Bộ mạch lập trình nhúng",          quantity: 20, unitPriceVND: 1_200_000 },
+      { category: "Robot AI", name: "Robot công nghiệp mini",            quantity: 1,  unitPriceVND: 95_000_000 },
+    ],
+    includedSoftware: [
+      { name: "Geleximco STEM Studio Pro", version: "3.2", licenseType: "per_user", seats: 40 },
+    ],
+    configuration: {
+      infrastructure: ["Xưởng thực hành 80 m²", "Điện 3 pha"],
+      smartDevices: ["Màn hình công nghiệp × 4"],
+      furniture: ["Bàn thực hành CNC × 2", "Tủ dụng cụ an toàn"],
+      decoration: ["Biển an toàn lao động", "Poster quy trình nghề"],
+    },
+    active: false,
+    publishedAt: "",
+    status: "waiting_approval",
+    packageType: "template",
+    equipmentCostVND: 289_000_000,
+    installationFeeVND: 12_000_000,
+    trainingDays: 3,
+    warrantyMonths: 24,
+    createdBy: "U-SUP-01",
+    submittedAt: "2026-05-15T09:00:00Z",
   },
 ];
 
 export function findPackage(id: string): StemPackage | undefined {
   return stemPackages.find((p) => p.id === id);
+}
+
+/** Lọc gói theo NCC — AD-04 competitive isolation */
+export function packagesBySupplier(supplierTenantId: string): StemPackage[] {
+  return stemPackages.filter((p) => p.supplierTenantId === supplierTenantId);
 }

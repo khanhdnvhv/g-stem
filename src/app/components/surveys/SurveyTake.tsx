@@ -8,7 +8,7 @@ import {
   MOCK_SURVEYS, CATEGORY_CONFIG,
   type Survey, type SurveyQuestion,
 } from "./mock-data";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 interface SurveyTakeProps {
   surveyId: string;

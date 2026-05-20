@@ -12,7 +12,7 @@ import { useAuth } from "../../AuthContext";
 import { PageHeader } from "../ui/PageHeader";
 import { KpiCard } from "../ui/KpiCard";
 import { formatNumberCompact, formatRelative } from "../ui/format";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  REGIONAL EDUCATION DASHBOARD — Dashboard toàn ngành GDPT        */

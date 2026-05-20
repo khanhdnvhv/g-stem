@@ -13,7 +13,7 @@ import type { StemProgram } from "../../mock-data/index";
 import { useAuth } from "../../AuthContext";
 import { PageHeader } from "../ui/PageHeader";
 import { ProgramBadge } from "../ui/badges";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  AI-BUDDY PANEL — 4 tab: Chat / Recommend / Grade / Analyze      */

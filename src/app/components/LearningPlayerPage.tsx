@@ -35,7 +35,7 @@ import {
   CollaborativeAnnotations,
   showAchievementToast,
 } from "./learning/SmartFeatures";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 /* ============================================================ */
 /*  MAIN COMPONENT: LearningPlayer (Enhanced)                    */

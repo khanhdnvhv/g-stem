@@ -8,7 +8,7 @@ import { useAuth } from "../../AuthContext";
 import { PageHeader } from "../ui/PageHeader";
 import { KpiCard } from "../ui/KpiCard";
 import { formatRelative } from "../ui/format";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  SCHOOL LICENSE PANEL — phân bổ license còn lại cho GV/HS         */

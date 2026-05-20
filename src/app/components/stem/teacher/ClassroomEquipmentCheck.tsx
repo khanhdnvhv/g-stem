@@ -9,7 +9,7 @@ import { useAuth } from "../../AuthContext";
 import { PageHeader } from "../ui/PageHeader";
 import { EquipmentStatusBadge } from "../ui/badges";
 import { KpiCard } from "../ui/KpiCard";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  CLASSROOM EQUIPMENT CHECK (Teacher)                              */

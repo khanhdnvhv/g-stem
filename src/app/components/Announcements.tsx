@@ -22,7 +22,7 @@ import {
 import { mockAnnouncements } from "./mock-data";
 import type { Announcement } from "./mock-data";
 import { useAuth } from "./AuthContext";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 const priorityConfig: Record<Announcement["priority"], { label: string; color: string; bg: string }> = {
   high: { label: "Quan trọng", color: "#e74c3c", bg: "#e74c3c10" },

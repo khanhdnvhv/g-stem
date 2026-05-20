@@ -25,7 +25,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Link } from "react-router";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 import {
   mockCourses,
   monthlyLearningData,

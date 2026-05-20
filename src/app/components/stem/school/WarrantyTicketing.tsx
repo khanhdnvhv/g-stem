@@ -12,7 +12,7 @@ import {
 } from "../ui/badges";
 import { KpiCard } from "../ui/KpiCard";
 import { formatDateTime, formatRelative } from "../ui/format";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  WARRANTY TICKETING (School) — trường tạo và theo dõi ticket      */

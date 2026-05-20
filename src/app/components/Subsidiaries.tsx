@@ -7,7 +7,7 @@ import {
   Trophy, Filter, ArrowUp, ArrowDown, Percent, Route as RouteIcon,
 } from "lucide-react";
 import { useAuth } from "./AuthContext";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 import { BUSINESS_SECTORS, mockCourses, CATEGORIES } from "./mock-data";
 
 // ============================================

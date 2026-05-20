@@ -9,7 +9,7 @@ import type { StemPackage } from "../../mock-data/index";
 import { PageHeader } from "../ui/PageHeader";
 import { TierBadge, ProgramBadge } from "../ui/badges";
 import { formatVND, formatVNDCompact } from "../ui/format";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  SCHOOL PURCHASE FLOW — wizard 4 bước mua gói STEM                */

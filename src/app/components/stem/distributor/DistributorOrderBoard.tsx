@@ -11,7 +11,7 @@ import {
 } from "../ui/badges";
 import { KpiCard } from "../ui/KpiCard";
 import { formatVND, formatVNDCompact, formatRelative } from "../ui/format";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  DISTRIBUTOR ORDER BOARD — Kanban đơn hàng của đại lý             */

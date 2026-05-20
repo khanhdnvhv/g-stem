@@ -7,7 +7,7 @@ import { tenantsByType, GRADE_LEVELS } from "../../mock-data/index";
 import { useAuth } from "../../AuthContext";
 import { PageHeader } from "../ui/PageHeader";
 import { KpiCard } from "../ui/KpiCard";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  STUDENT MANAGEMENT (School) — quản lý học sinh                  */

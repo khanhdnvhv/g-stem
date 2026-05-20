@@ -11,7 +11,7 @@ import { tenants } from "../../mock-data/index";
 import { PageHeader } from "../ui/PageHeader";
 import { KpiCard } from "../ui/KpiCard";
 import { TenantBadge } from "../ui/badges";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  USER MANAGEMENT (Admin) — Toàn bộ users trên Platform            */

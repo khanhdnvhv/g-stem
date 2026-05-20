@@ -9,7 +9,7 @@ import {
   ChevronRight, ArrowRight, RefreshCw, Save,
   Monitor, Smartphone, Tablet,
 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 import { useAuth } from "./AuthContext";
 
 // ─── Types ───

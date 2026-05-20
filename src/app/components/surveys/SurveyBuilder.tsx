@@ -11,7 +11,7 @@ import {
   type SurveyQuestion, type QuestionType, type SurveyCategory,
 } from "./mock-data";
 import { useConfirm } from "../ConfirmDialog";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 interface SurveyBuilderProps {
   onBack: () => void;

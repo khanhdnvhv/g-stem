@@ -19,6 +19,12 @@ export type StemProgram = "CT1" | "CT2" | "CT3" | "CT4" | "CT5";
 /** Gói phòng STEM — 3 tier */
 export type StemPackageTier = "minimum" | "basic" | "advanced";
 
+/** Vòng đời gói */
+export type PackageStatus = "draft" | "waiting_approval" | "active" | "discontinued";
+
+/** Loại gói: catalog cố định vs custom cho 1 trường */
+export type PackageType = "template" | "custom";
+
 /* ================================================================ */
 /*  Tenant                                                           */
 /* ================================================================ */
@@ -78,6 +84,8 @@ export interface SoftwareSpec {
 export interface StemPackage {
   id: string;
   tier: StemPackageTier;
+  /** NCC sở hữu gói này — AD-04: mỗi NCC chỉ thấy gói của mình */
+  supplierTenantId: string;
   name: string;
   description: string;
   priceVND: number;
@@ -95,6 +103,39 @@ export interface StemPackage {
   };
   active: boolean;
   publishedAt: string;
+  /** Vòng đời — nếu undefined thì coi như "active" (backward compat) */
+  status?: PackageStatus;
+  packageType?: PackageType;
+  /** Chỉ khi packageType = "custom" */
+  targetSchoolId?: string;
+  /** Chi tiết giá (tách từ priceVND) */
+  equipmentCostVND?: number;
+  installationFeeVND?: number;
+  trainingDays?: number;
+  warrantyMonths?: number;
+  /** Nội dung kèm theo */
+  contentLessonIds?: string[];
+  teacherDocUrls?: string[];
+  /** Approval metadata */
+  createdBy?: string;
+  approvedBy?: string;
+  rejectionNote?: string;
+  submittedAt?: string;
+}
+
+/* ================================================================ */
+/*  SchoolPackage — Gắn gói cho trường (V1 direct sales)            */
+/* ================================================================ */
+export interface SchoolPackage {
+  id: string;
+  packageId: string;
+  schoolTenantId: string;
+  /** userId NCC staff thực hiện gắn */
+  assignedBy: string;
+  startDate: string;
+  notes?: string;
+  status: "active" | "expired" | "cancelled";
+  createdAt: string;
 }
 
 /* ================================================================ */
@@ -184,12 +225,15 @@ export interface Contract {
   milestones: ContractMilestone[];
   attachments: string[];
   commissionPct?: number;
+  /** Lý do chấm dứt hợp đồng sớm (BR-OP-11) */
+  terminationReason?: string;
 }
 
 /* ================================================================ */
 /*  License                                                          */
 /* ================================================================ */
 export type LicenseType = "per_user" | "per_device" | "site";
+export type LicenseStatus = "active" | "expiring" | "expired" | "revoked";
 export interface License {
   id: string;
   licenseKey: string;
@@ -201,6 +245,34 @@ export interface License {
   issuedAt: string;
   expiresAt: string;
   revokedAt?: string;
+  /** Truy nguồn — license cấp theo hợp đồng/đơn nào (BR-OP-03) */
+  contractId?: string;
+  orderId?: string;
+  /** Trạng thái tường minh — nếu undefined thì suy ra từ revokedAt/expiresAt */
+  status?: LicenseStatus;
+}
+
+/* ================================================================ */
+/*  InstallCampaign — Chiến dịch cài đặt bộ cài phần mềm             */
+/*  Nguồn: docs/Operations-Business-Analysis.md §5                   */
+/* ================================================================ */
+export type CampaignStatus = "draft" | "running" | "completed" | "failed" | "paused";
+export interface InstallCampaign {
+  id: string;
+  name: string;
+  softwareName: string;
+  version: string;
+  /** Truy nguồn — campaign thuộc hợp đồng nào */
+  contractId?: string;
+  /** License kích hoạt phần mềm (BR-OP-06) */
+  licenseId?: string;
+  /** Thiết bị mục tiêu (BR-OP-05) */
+  targetEquipmentIds: string[];
+  targetCount: number;
+  completedCount: number;
+  failedCount: number;
+  status: CampaignStatus;
+  createdAt: string;
 }
 
 /* ================================================================ */
@@ -296,6 +368,10 @@ export interface STEMExam {
   organiser: string;
   status: "upcoming" | "open" | "closed" | "graded";
   totalParticipants?: number;
+  /** ID câu hỏi từ EXAM_QUESTIONS — kỳ thi tạo qua wizard */
+  questionIds?: string[];
+  /** Điểm đạt (thang 10) */
+  passingScore?: number;
 }
 
 /* ================================================================ */
@@ -376,4 +452,105 @@ export interface Notification {
   type: "info" | "warning" | "success" | "deadline";
   time: string;
   read: boolean;
+}
+
+/* ================================================================ */
+/*  LESSON V2 — Schema mới hỗ trợ 5 CT đầy đủ                        */
+/*  Nguồn: docs/CT-Programs-Specification.md §13                     */
+/*  Coexist với `Lesson` cũ — backward compat                        */
+/* ================================================================ */
+
+/* ── CT-specific metadata (discriminated union) ── */
+export interface CT1Meta {
+  type: "CT1";
+  subject: string;          // 1 môn duy nhất
+  sgkBook?: string;         // SGK ref encoded (VD "TOAN-8-KNTT/C1/L1.2")
+}
+
+export interface CT2Meta {
+  type: "CT2";
+  drivingSubject: string;
+  integratedSubjects: string[];
+  topic: string;
+  sgkBooks?: string[];
+}
+
+export interface CT3Meta {
+  type: "CT3";
+  activityName: string;
+  domain: "stem_art" | "tin_hoc" | "khoa_hoc_vl" | "co_khi" | "sinh_hoc" | "khac";
+  finalProduct: string;
+  studentsPerGroup: number;
+}
+
+export interface CT4Meta {
+  type: "CT4";
+  module: "robotics_1" | "ai" | "iot" | "robotics_ai";
+  language: "scratch" | "block" | "arduino_c" | "python";
+  requiredHardware: string[];   // VD ["Arduino UNO", "HC-SR04"]
+  safetyNotes: string;
+}
+
+export interface CT5Meta {
+  type: "CT5";
+  topicCode: string;            // VD "T01"
+  leadStudent: string;          // tên HS
+  mentorTeacher: string;        // tên GV
+  expectedDuration: "3m" | "6m" | "1y" | "2y";
+  researchQuestion: string;
+  hypothesis?: string;
+  methodology?: string;
+  expectedOutputs: Array<"paper" | "poster" | "competition" | "real_product">;
+  fiveYearPlan?: Array<{ year: number; goal: string }>;
+}
+
+export type CTMetadata = CT1Meta | CT2Meta | CT3Meta | CT4Meta | CT5Meta;
+
+/* ── Block content shapes ── */
+export interface LessonBlock {
+  id: string;
+  type: string;              // BlockType — tham chiếu ct-templates
+  phaseId: string;           // ID phase (warmup / knowledge / build / rq / ...)
+  order: number;
+  content: unknown;          // shape phụ thuộc block type
+}
+
+/* ── Attachment slot instance ── */
+export interface LessonAttachment {
+  slotType: string;         // AttachmentSlotType
+  fileName?: string;
+  fileSize?: string;
+  fileUrl?: string;
+  uploadedAt?: string;
+  uploadedBy?: string;
+}
+
+/* ── Learning objectives — 4 mục tiêu chuẩn 5512 ── */
+export interface LearningObjectives {
+  knowledge: string;        // Kiến thức
+  skills: string;           // Kỹ năng
+  attitude: string;         // Thái độ
+  competencies: string[];   // Năng lực — tham chiếu Competency
+}
+
+/* ── LessonV2 — schema chính ── */
+export interface LessonV2 {
+  id: string;
+  title: string;
+  description: string;
+  programCode: StemProgram;
+  gradeLevel: string;       // VD "THCS 8"
+  durationMinutes: number;
+  thumbnail: string;
+  status: "draft" | "review" | "published" | "researching" | "completed";
+  ctMetadata: CTMetadata;
+  objectives?: LearningObjectives;
+  requiredDevices?: Array<{ deviceId: string; qty: number }>;
+  blocks: LessonBlock[];
+  attachments: LessonAttachment[];
+  createdBy: string;
+  createdAt: string;
+  publishedAt?: string;
+  lastSavedAt?: string;
+  version?: number;
 }

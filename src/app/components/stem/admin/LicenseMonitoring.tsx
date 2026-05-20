@@ -11,7 +11,7 @@ import { PageHeader } from "../ui/PageHeader";
 import { KpiCard } from "../ui/KpiCard";
 import { TenantBadge } from "../ui/badges";
 import { formatRelative } from "../ui/format";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  LICENSE MONITORING (Admin) — giám sát license toàn platform      */

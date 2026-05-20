@@ -7,7 +7,7 @@ import { PageHeader } from "../ui/PageHeader";
 import { KpiCard } from "../ui/KpiCard";
 import { ProgramBadge } from "../ui/badges";
 import type { StemProgram } from "../../mock-data/index";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  STUDENT PROGRESS TRACKER (Teacher)                              */

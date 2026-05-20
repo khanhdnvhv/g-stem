@@ -7,7 +7,7 @@ import {
 import { useAuth } from "../AuthContext";
 import { useConfirm } from "../ConfirmDialog";
 import { EmptyState } from "../EmptyState";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 import {
   TRAINING_SESSIONS, CLASSROOMS, SESSION_STATUS_CONFIG,
   DAYS_OF_WEEK, WEEK_DATES, TIME_SLOTS,

@@ -9,7 +9,7 @@ import {
 import { useAuth } from "../../AuthContext";
 import { PageHeader } from "../ui/PageHeader";
 import { KpiCard } from "../ui/KpiCard";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  SCHOOL DIRECTORY (Authority) — Danh bạ trường trực thuộc         */

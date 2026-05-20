@@ -9,7 +9,7 @@ import { useAuth } from "../../AuthContext";
 import { PageHeader } from "../ui/PageHeader";
 import { KpiCard } from "../ui/KpiCard";
 import { formatVNDCompact, formatDate } from "../ui/format";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  CRM CUSTOMER MANAGEMENT — danh bạ trường / khách hàng           */

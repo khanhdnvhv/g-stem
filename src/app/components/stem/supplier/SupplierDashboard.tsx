@@ -4,10 +4,9 @@ import {
   TrendingUp, ChevronRight, Users, School as SchoolIcon,
   Handshake, CheckCircle2,
 } from "lucide-react";
-import {
-  orders, warrantyTickets, licenses, tenantsByType, stemPackages,
-} from "../../mock-data/index";
+import { tenantsByType, stemPackages } from "../../mock-data/index";
 import { useAuth } from "../../AuthContext";
+import { useOperations } from "@/app/lib/OperationsContext";
 import { PageHeader } from "../ui/PageHeader";
 import { KpiCard } from "../ui/KpiCard";
 import {
@@ -21,17 +20,18 @@ import { formatVNDCompact, formatRelative } from "../ui/format";
 
 export function SupplierDashboard() {
   const { user } = useAuth();
+  const { orders, tickets, licenses } = useOperations();
 
   const revenue = orders.filter((o) => o.status === "delivered")
     .reduce((s, o) => s + o.totalVND, 0);
   const pendingOrders = orders.filter((o) => o.status === "pending").length;
-  const activeTickets = warrantyTickets.filter((t) =>
+  const activeTickets = tickets.filter((t) =>
     ["new", "accepted", "in_progress", "awaiting_part"].includes(t.status)
   ).length;
-  const totalLicensesActive = licenses.filter((l) => !l.revokedAt).length;
+  const totalLicensesActive = licenses.filter((l) => l.status !== "revoked" && !l.revokedAt).length;
 
   const recentOrders = [...orders].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 5);
-  const recentTickets = [...warrantyTickets].sort((a, b) => b.reportedAt.localeCompare(a.reportedAt)).slice(0, 5);
+  const recentTickets = [...tickets].sort((a, b) => b.reportedAt.localeCompare(a.reportedAt)).slice(0, 5);
 
   return (
     <div className="space-y-5">

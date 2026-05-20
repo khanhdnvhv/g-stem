@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, BookOpen, Award, Bell, GraduationCap, BarChart3,
-  Calendar, Mail, User, Settings, MessageCircle, Megaphone,
+  Calendar, User, Settings, MessageCircle, Megaphone,
   Package, Boxes, Puzzle, Edit, FolderOpen, ClipboardCheck,
   UserCheck, Warehouse, Receipt, Wrench, KeyRound, FileBadge,
   School, Handshake, TrendingUp, UsersRound, ShoppingBag,
@@ -8,6 +8,7 @@ import {
   Layers, FileText, Microscope, Bot, PenTool, Activity,
   ScrollText, Shield, Server, Plug, Cpu, Lightbulb,
   FlaskConical, Video, Factory, ClipboardList, Atom,
+  Building2, BookMarked, DoorOpen, PieChart, HardDrive,
   type LucideIcon,
 } from "lucide-react";
 import type { StemRole } from "../AuthContext";
@@ -34,7 +35,6 @@ const SHARED_PERSONAL: NavGroup = {
   title: "Cá nhân",
   items: [
     { to: "/shared/profile", icon: User, label: "Hồ sơ Cá nhân" },
-    { to: "/shared/messages", icon: Mail, label: "Tin nhắn" },
     { to: "/shared/notifications", icon: Bell, label: "Thông báo" },
     { to: "/shared/settings", icon: Settings, label: "Cài đặt" },
   ],
@@ -48,9 +48,10 @@ const SUPPLIER_NAV: NavGroup[] = [
   {
     title: "Sản phẩm & Giải pháp",
     items: [
-      { to: "/supplier/packages", icon: Boxes, label: "Danh mục gói STEM" },
-      { to: "/supplier/programs", icon: Puzzle, label: "Chương trình CT1–CT5" },
-      { to: "/supplier/media", icon: Video, label: "Thư viện Media" },
+      { to: "/supplier/packages",  icon: Boxes,      label: "Danh mục gói STEM" },
+      { to: "/supplier/devices",   icon: HardDrive,   label: "Danh mục Thiết bị" },
+      { to: "/supplier/programs",  icon: Puzzle,      label: "Chương trình STEM" },
+      { to: "/supplier/media",     icon: Video,       label: "Thư viện Media" },
     ],
   },
   {
@@ -65,10 +66,11 @@ const SUPPLIER_NAV: NavGroup[] = [
   {
     title: "Vận hành",
     items: [
-      { to: "/supplier/orders", icon: Receipt, label: "Đơn hàng", badge: "12" },
-      { to: "/supplier/warranty", icon: Wrench, label: "Bảo hành", badge: "5" },
-      { to: "/supplier/licenses", icon: KeyRound, label: "License" },
-      { to: "/supplier/software", icon: Cpu, label: "Bộ cài Phần mềm" },
+      { to: "/supplier/orders",    icon: Receipt,   label: "Đơn hàng",    badge: "12" },
+      { to: "/supplier/contracts", icon: FileText,  label: "Hợp đồng" },
+      { to: "/supplier/warranty",  icon: Wrench,    label: "Bảo hành",    badge: "5" },
+      { to: "/supplier/licenses",  icon: KeyRound,  label: "License" },
+      { to: "/supplier/software",  icon: Cpu,       label: "Bộ cài Phần mềm" },
     ],
   },
   {
@@ -96,7 +98,7 @@ const SUPPLIER_CONTENT_NAV: NavGroup[] = [
   {
     title: "Chương trình & Nội dung",
     items: [
-      { to: "/supplier/programs", icon: Puzzle, label: "Chương trình CT1–CT5" },
+      { to: "/supplier/programs", icon: Puzzle, label: "Chương trình STEM" },
       { to: "/supplier/content/authoring", icon: Edit, label: "Studio Biên soạn" },
       { to: "/supplier/content/library", icon: FolderOpen, label: "Ngân hàng Nội dung" },
       { to: "/supplier/media", icon: Video, label: "Thư viện Media" },
@@ -229,39 +231,56 @@ const DISTRIBUTOR_FINANCE_NAV: NavGroup[] = [
 const SCHOOL_PRINCIPAL_NAV: NavGroup[] = [
   {
     title: "Tổng quan",
-    items: [{ to: "/school/dashboard", icon: LayoutDashboard, label: "Dashboard Trường" }],
-  },
-  {
-    title: "Mua sắm & Đầu tư",
     items: [
-      { to: "/school/purchase", icon: ShoppingBag, label: "Mua sắm gói STEM" },
+      { to: "/school/dashboard", icon: LayoutDashboard, label: "Dashboard Trường" },
+      { to: "/school/profile", icon: Building2, label: "Hồ sơ Trường học" },
     ],
   },
   {
-    title: "Cơ sở vật chất",
+    title: "Nhân sự & Lớp học",
     items: [
-      { to: "/school/equipment", icon: Boxes, label: "Quản lý Thiết bị" },
+      { to: "/school/teachers", icon: UserCheck, label: "Danh sách Giáo viên" },
+      { to: "/school/students", icon: UsersRound, label: "Danh sách Học sinh" },
+      { to: "/school/classes", icon: GraduationCap, label: "Danh sách Lớp" },
+    ],
+  },
+  {
+    title: "Phòng STEM & TKB",
+    items: [
+      { to: "/school/rooms", icon: DoorOpen, label: "Phòng STEM" },
+      { to: "/school/rooms/booking", icon: Calendar, label: "Đặt phòng STEM" },
+      { to: "/school/schedule", icon: Calendar, label: "TKB Toàn trường" },
+      { to: "/school/stem-slots", icon: Layers, label: "Xếp tiết STEM" },
+    ],
+  },
+  {
+    title: "Thiết bị & Bảo hành",
+    items: [
+      { to: "/school/equipment", icon: Boxes, label: "Thiết bị STEM" },
       { to: "/school/warranty", icon: Wrench, label: "Yêu cầu Bảo hành", badge: "2" },
     ],
   },
   {
-    title: "Đào tạo STEM",
+    title: "Khóa học & License",
     items: [
-      { to: "/school/schedule", icon: Calendar, label: "Thời khóa biểu" },
-      { to: "/school/teachers", icon: UserCheck, label: "Giáo viên" },
-      { to: "/school/students", icon: UsersRound, label: "Học sinh" },
-      { to: "/school/licenses", icon: KeyRound, label: "License & Tài khoản" },
+      { to: "/school/purchase", icon: ShoppingBag, label: "Mua sắm gói STEM" },
+      { to: "/school/courses", icon: BookMarked, label: "Khóa STEM đã mua" },
+      { to: "/school/licenses", icon: KeyRound, label: "Pool License" },
+      { to: "/school/license-assign", icon: Users, label: "Gán / Thu hồi License" },
     ],
   },
   {
-    title: "Báo cáo",
+    title: "Báo cáo & Phân tích",
     items: [
       { to: "/school/reports", icon: BarChart3, label: "Hiệu quả STEM" },
+      { to: "/school/reports/roi", icon: PieChart, label: "Thống kê phòng (ROI)" },
+      { to: "/school/reports/builder", icon: FileText, label: "Report Builder" },
     ],
   },
   {
-    title: "Tương tác",
+    title: "Quản trị",
     items: [
+      { to: "/school/settings", icon: Settings, label: "Cài đặt Trường" },
       { to: "/shared/announcements", icon: Megaphone, label: "Thông báo" },
     ],
   },
@@ -274,14 +293,28 @@ const SCHOOL_ADMIN_NAV: NavGroup[] = [
     items: [{ to: "/school/dashboard", icon: LayoutDashboard, label: "Dashboard" }],
   },
   {
+    title: "Nhân sự",
+    items: [
+      { to: "/school/teachers", icon: UserCheck, label: "Giáo viên" },
+      { to: "/school/students", icon: UsersRound, label: "Học sinh" },
+      { to: "/school/classes", icon: GraduationCap, label: "Lớp học" },
+    ],
+  },
+  {
     title: "Vận hành",
     items: [
       { to: "/school/purchase", icon: ShoppingBag, label: "Mua sắm STEM" },
+      { to: "/school/courses", icon: BookMarked, label: "Khóa học STEM" },
       { to: "/school/equipment", icon: Boxes, label: "Thiết bị" },
       { to: "/school/warranty", icon: Wrench, label: "Bảo hành" },
       { to: "/school/licenses", icon: KeyRound, label: "License" },
-      { to: "/school/teachers", icon: UserCheck, label: "Giáo viên" },
-      { to: "/school/students", icon: UsersRound, label: "Học sinh" },
+      { to: "/school/license-assign", icon: Users, label: "Gán License" },
+    ],
+  },
+  {
+    title: "Cài đặt",
+    items: [
+      { to: "/school/settings", icon: Settings, label: "Cài đặt Trường" },
     ],
   },
   SHARED_PERSONAL,

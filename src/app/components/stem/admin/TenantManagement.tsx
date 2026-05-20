@@ -9,7 +9,7 @@ import { PageHeader } from "../ui/PageHeader";
 import { TenantBadge } from "../ui/badges";
 import { KpiCard } from "../ui/KpiCard";
 import { formatRelative, formatDate } from "../ui/format";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  TENANT MANAGEMENT (Admin) — quản lý 4 loại tenant                */

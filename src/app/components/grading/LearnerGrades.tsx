@@ -7,7 +7,7 @@ import {
   MOCK_SUBMISSIONS, STATUS_CONFIG, getLetterGrade, getLetterColor,
   GRADING_COURSES, type GradingSubmission,
 } from "./mock-data";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 // Simulate learner's own submissions (first 12 from mock data)
 function getMySubmissions(): GradingSubmission[] {

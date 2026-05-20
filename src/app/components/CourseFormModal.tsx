@@ -14,7 +14,7 @@ import type { Course } from "./mock-data";
 import { useAuth } from "./AuthContext";
 import { INITIAL_CONTENT, TYPE_CONFIG } from "./ContentBank";
 import type { ContentItem } from "./ContentBank";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 // ═══════════════════════════════════════════════════════════════
 // Types & Constants

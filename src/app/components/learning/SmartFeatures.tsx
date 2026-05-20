@@ -8,7 +8,7 @@ import {
   Keyboard, Eye, CheckCircle2, MessageSquare, Download,
   Layers, BarChart3,
 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  1. KEYBOARD SHORTCUTS OVERLAY                                    */

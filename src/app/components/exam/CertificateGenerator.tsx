@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { MOCK_EXAMS } from "./types";
 import { SUBSIDIARIES, DEPARTMENTS } from "../mock-data";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 // ── Types ──
 interface CertificateRecord {

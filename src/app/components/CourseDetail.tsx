@@ -23,7 +23,7 @@ import {
 import { mockCourses } from "./mock-data";
 import type { Course } from "./mock-data";
 import { useAuth } from "./AuthContext";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 import { useConfirm } from "./ConfirmDialog";
 import { CourseFormModal } from "./CourseFormModal";
 import { copyToClipboard } from "../utils/clipboard";

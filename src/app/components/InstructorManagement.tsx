@@ -13,7 +13,7 @@ import { useConfirm } from "./ConfirmDialog";
 import { EmptyState } from "./EmptyState";
 import { InstructorFormModal } from "./InstructorFormModal";
 import type { InstructorFormData } from "./InstructorFormModal";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 // ─── Types ───
 interface Instructor {

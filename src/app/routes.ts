@@ -10,7 +10,6 @@ import { ComingSoon } from "./components/stem/ComingSoon";
 import { UserProfile } from "./components/UserProfile";
 import { Settings } from "./components/Settings";
 import { Notifications } from "./components/Notifications";
-import { Messaging } from "./components/Messaging";
 import { Announcements } from "./components/Announcements";
 import { Dashboard as LegacyDashboard } from "./components/Dashboard";
 import { Quizzes as LegacyQuizzes } from "./components/Quizzes";
@@ -19,6 +18,7 @@ import { Quizzes as LegacyQuizzes } from "./components/Quizzes";
 import { SupplierDashboard } from "./components/stem/supplier/SupplierDashboard";
 import { STEMPackageCatalog } from "./components/stem/supplier/STEMPackageCatalog";
 import { STEMPackageConfigurator } from "./components/stem/supplier/STEMPackageConfigurator";
+import { PackageDetail } from "./components/stem/supplier/PackageDetail";
 import { STEMProgramManager } from "./components/stem/supplier/STEMProgramManager";
 import { MediaAssetManager } from "./components/stem/supplier/MediaAssetManager";
 import { STEMOrderManagement } from "./components/stem/supplier/STEMOrderManagement";
@@ -27,12 +27,20 @@ import { SoftwareInstaller } from "./components/stem/supplier/SoftwareInstaller"
 import { WarrantyFulfillment } from "./components/stem/supplier/WarrantyFulfillment";
 import { SupplierRevenueDashboard } from "./components/stem/supplier/SupplierRevenueDashboard";
 import { ContentAuthoringStudio } from "./components/stem/supplier/ContentAuthoringStudio";
+import { LessonEditor } from "./components/stem/supplier/LessonEditor";
+import { ResearchProjectEditor } from "./components/stem/supplier/ResearchProjectEditor";
 import { ContentLibraryBank } from "./components/stem/supplier/ContentLibraryBank";
 import { STEMExamEcosystem } from "./components/stem/supplier/STEMExamEcosystem";
+import { ExamDetail } from "./components/stem/supplier/ExamDetail";
+import { ExamQuestionBank } from "./components/stem/supplier/ExamQuestionBank";
 import { TeacherTrainingProgram } from "./components/stem/supplier/TeacherTrainingProgram";
 import { SchoolsDirectoryNCC } from "./components/stem/supplier/SchoolsDirectoryNCC";
 import { DistributorNetwork } from "./components/stem/supplier/DistributorNetwork";
 import { TeachingEffectivenessAnalytics } from "./components/stem/supplier/TeachingEffectivenessAnalytics";
+import { ContentItemDetail } from "./components/stem/supplier/ContentItemDetail";
+import { DeviceCatalog } from "./components/stem/supplier/DeviceCatalog";
+import { SupplierContractList } from "./components/stem/supplier/SupplierContractList";
+import { SupplierContractDetail } from "./components/stem/supplier/SupplierContractDetail";
 
 // === Distributor — Phase 3 ===========================================
 import { DistributorDashboard } from "./components/stem/distributor/DistributorDashboard";
@@ -51,10 +59,24 @@ import { SchoolPurchaseFlow } from "./components/stem/school/SchoolPurchaseFlow"
 import { EquipmentInventory } from "./components/stem/school/EquipmentInventory";
 import { WarrantyTicketing } from "./components/stem/school/WarrantyTicketing";
 import { TeacherManagement } from "./components/stem/school/TeacherManagement";
+import { TeacherProfile } from "./components/stem/school/TeacherProfile";
 import { StudentManagement } from "./components/stem/school/StudentManagement";
+import { StudentProfile } from "./components/stem/school/StudentProfile";
 import { STEMSchedulePlanner } from "./components/stem/school/STEMSchedulePlanner";
 import { SchoolLicensePanel } from "./components/stem/school/SchoolLicensePanel";
 import { SchoolSTEMEffectivenessReport } from "./components/stem/school/SchoolSTEMEffectivenessReport";
+import { SchoolProfile } from "./components/stem/school/SchoolProfile";
+import { ClassManagement } from "./components/stem/school/ClassManagement";
+import { RoomList } from "./components/stem/school/RoomList";
+import { RoomDetail } from "./components/stem/school/RoomDetail";
+import { RoomBooking } from "./components/stem/school/RoomBooking";
+import { STEMSlotPlanner } from "./components/stem/school/STEMSlotPlanner";
+import { LicenseAssign } from "./components/stem/school/LicenseAssign";
+import { CourseList } from "./components/stem/school/CourseList";
+import { CourseAssign } from "./components/stem/school/CourseAssign";
+import { RoomROIReport } from "./components/stem/school/RoomROIReport";
+import { ReportBuilder } from "./components/stem/school/ReportBuilder";
+import { SchoolSettings } from "./components/stem/school/SchoolSettings";
 
 // === Teacher — Phase 4 ===============================================
 import { TeacherDashboard } from "./components/stem/teacher/TeacherDashboard";
@@ -64,6 +86,8 @@ import { TeacherResourceDownloader } from "./components/stem/teacher/TeacherReso
 import { ClassroomEquipmentCheck } from "./components/stem/teacher/ClassroomEquipmentCheck";
 import { StudentProgressTracker } from "./components/stem/teacher/StudentProgressTracker";
 import { LessonPlanBuilder } from "./components/stem/teacher/LessonPlanBuilder";
+import { TeacherGrading } from "./components/stem/teacher/TeacherGrading";
+import { TeacherClasses } from "./components/stem/teacher/TeacherClasses";
 
 // === Student — Phase 4 ===============================================
 import { StudentHome } from "./components/stem/student/StudentHome";
@@ -100,6 +124,37 @@ import { CrossTenantAccessLog } from "./components/stem/admin/CrossTenantAccessL
 import { UserManagementAdmin } from "./components/stem/admin/UserManagementAdmin";
 import { RolesPermissionsAdmin } from "./components/stem/admin/RolesPermissionsAdmin";
 
+// === PUBLIC LAYER (V1, no auth) ======================================
+import { PublicLayout } from "./components/public/layout/PublicLayout";
+import {
+  Home,
+  About,
+  SolutionsHub,
+  SolutionMinimum,
+  SolutionBasic,
+  SolutionAdvanced,
+  ProgramsHub,
+  ProgramCT1,
+  ProgramCT2,
+  ProgramCT3,
+  ProgramCT4,
+  ProgramCT5,
+  PartnersHub,
+  PartnerGeleximco,
+  PartnerEBD,
+  PartnerNexta,
+  NewsList,
+  NewsDetail,
+  Events,
+  Contact,
+  SupportHub,
+  FAQ,
+  KBHub,
+  KBArticle,
+  TicketNew,
+  Downloads,
+} from "./components/public/pages";
+
 const stub = (title: string, phase?: string) => ({
   Component: () => createElement(ComingSoon, { title, phase }),
 });
@@ -110,6 +165,56 @@ const routerBase = (import.meta.env.BASE_URL || "/").replace(/\/$/, "");
 export const router = createBrowserRouter([
   { path: "/login", Component: Login },
 
+  /* ================================================================ */
+  /* PUBLIC LAYER (V1) — 26 marketing pages, KHÔNG cần auth           */
+  /* ================================================================ */
+  {
+    Component: PublicLayout,
+    children: [
+      { path: "/",                              Component: Home },
+      { path: "/about",                         Component: About },
+
+      /* — Solutions */
+      { path: "/solutions",                     Component: SolutionsHub },
+      { path: "/solutions/minimum",             Component: SolutionMinimum },
+      { path: "/solutions/basic",               Component: SolutionBasic },
+      { path: "/solutions/advanced",            Component: SolutionAdvanced },
+
+      /* — Programs */
+      { path: "/programs",                      Component: ProgramsHub },
+      { path: "/programs/ct1",                  Component: ProgramCT1 },
+      { path: "/programs/ct2",                  Component: ProgramCT2 },
+      { path: "/programs/ct3",                  Component: ProgramCT3 },
+      { path: "/programs/ct4",                  Component: ProgramCT4 },
+      { path: "/programs/ct5",                  Component: ProgramCT5 },
+
+      /* — Partners */
+      { path: "/partners",                      Component: PartnersHub },
+      { path: "/partners/geleximco-stem",       Component: PartnerGeleximco },
+      { path: "/partners/ebd",                  Component: PartnerEBD },
+      { path: "/partners/nexta",                Component: PartnerNexta },
+
+      /* — News + Events */
+      { path: "/news",                          Component: NewsList },
+      { path: "/news/:slug",                    Component: NewsDetail },
+      { path: "/events",                        Component: Events },
+
+      /* — Contact + Support */
+      { path: "/contact",                       Component: Contact },
+      { path: "/support",                       Component: SupportHub },
+      { path: "/support/faq",                   Component: FAQ },
+      { path: "/support/kb",                    Component: KBHub },
+      { path: "/support/kb/:slug",              Component: KBArticle },
+      { path: "/support/ticket-new",            Component: TicketNew },
+
+      /* — Downloads */
+      { path: "/downloads",                     Component: Downloads },
+    ],
+  },
+
+  /* ================================================================ */
+  /* APP LAYER (authenticated) — existing routes giữ nguyên           */
+  /* ================================================================ */
   {
     path: "/",
     Component: AuthGuard,
@@ -117,17 +222,29 @@ export const router = createBrowserRouter([
       {
         Component: Layout,
         children: [
-          { index: true, Component: LegacyDashboard },
+          { path: "dashboard",                  Component: LegacyDashboard },
 
           /* ============ SUPPLIER ============ */
           { path: "supplier/dashboard",               Component: SupplierDashboard },
-          { path: "supplier/packages",                Component: STEMPackageCatalog },
-          { path: "supplier/packages/:id/configure",  Component: STEMPackageConfigurator },
+          { path: "supplier/packages",                  Component: STEMPackageCatalog },
+          { path: "supplier/packages/new",             Component: STEMPackageConfigurator },
+          { path: "supplier/packages/:id",             Component: PackageDetail },
+          { path: "supplier/packages/:id/configure",   Component: STEMPackageConfigurator },
           { path: "supplier/programs",                Component: STEMProgramManager },
-          { path: "supplier/content/authoring",       Component: ContentAuthoringStudio },
+          { path: "supplier/content/authoring",                    Component: ContentAuthoringStudio },
+          { path: "supplier/content/authoring/new",                Component: LessonEditor },
+          { path: "supplier/content/authoring/research/new",       Component: ResearchProjectEditor },
+          { path: "supplier/content/authoring/research/:lessonId", Component: ResearchProjectEditor },
+          { path: "supplier/content/authoring/:lessonId",          Component: LessonEditor },
           { path: "supplier/content/library",         Component: ContentLibraryBank },
+          { path: "supplier/content/library/:id",     Component: ContentItemDetail },
+          { path: "supplier/devices",                 Component: DeviceCatalog },
+          { path: "supplier/contracts",               Component: SupplierContractList },
+          { path: "supplier/contracts/:id",           Component: SupplierContractDetail },
           { path: "supplier/media",                   Component: MediaAssetManager },
           { path: "supplier/exams",                   Component: STEMExamEcosystem },
+          { path: "supplier/exams/questions",         Component: ExamQuestionBank },
+          { path: "supplier/exams/:id",               Component: ExamDetail },
           { path: "supplier/training",                Component: TeacherTrainingProgram },
           { path: "supplier/orders",                  Component: STEMOrderManagement },
           { path: "supplier/warranty",                Component: WarrantyFulfillment },
@@ -151,14 +268,28 @@ export const router = createBrowserRouter([
 
           /* ============ SCHOOL ============ */
           { path: "school/dashboard",                 Component: SchoolDashboard },
+          { path: "school/profile",                   Component: SchoolProfile },
           { path: "school/purchase",                  Component: SchoolPurchaseFlow },
           { path: "school/equipment",                 Component: EquipmentInventory },
           { path: "school/warranty",                  Component: WarrantyTicketing },
           { path: "school/teachers",                  Component: TeacherManagement },
+          { path: "school/teachers/:id",              Component: TeacherProfile },
           { path: "school/students",                  Component: StudentManagement },
+          { path: "school/students/:id",              Component: StudentProfile },
+          { path: "school/classes",                   Component: ClassManagement },
+          { path: "school/rooms",                     Component: RoomList },
+          { path: "school/rooms/booking",             Component: RoomBooking },
+          { path: "school/rooms/:id",                 Component: RoomDetail },
           { path: "school/schedule",                  Component: STEMSchedulePlanner },
+          { path: "school/stem-slots",                Component: STEMSlotPlanner },
           { path: "school/licenses",                  Component: SchoolLicensePanel },
+          { path: "school/license-assign",            Component: LicenseAssign },
+          { path: "school/courses",                   Component: CourseList },
+          { path: "school/courses/:id/assign",        Component: CourseAssign },
           { path: "school/reports",                   Component: SchoolSTEMEffectivenessReport },
+          { path: "school/reports/roi",               Component: RoomROIReport },
+          { path: "school/reports/builder",           Component: ReportBuilder },
+          { path: "school/settings",                  Component: SchoolSettings },
 
           /* ============ AUTHORITY ============ */
           { path: "authority/dashboard",              Component: RegionalEducationDashboard },
@@ -177,8 +308,8 @@ export const router = createBrowserRouter([
           { path: "teacher/lesson-plan-builder",      Component: LessonPlanBuilder },
           { path: "teacher/resources",                Component: TeacherResourceDownloader },
           { path: "teacher/training",                 Component: TeacherTrainingHub },
-          { path: "teacher/classes",                  Component: StudentProgressTracker },
-          { path: "teacher/grading",                  Component: StudentProgressTracker },
+          { path: "teacher/classes",                  Component: TeacherClasses },
+          { path: "teacher/grading",                  Component: TeacherGrading },
           { path: "teacher/exams",                    Component: LegacyQuizzes },
           { path: "teacher/equipment-check",          Component: ClassroomEquipmentCheck },
 
@@ -209,7 +340,6 @@ export const router = createBrowserRouter([
           { path: "shared/profile",                   Component: UserProfile },
           { path: "shared/settings",                  Component: Settings },
           { path: "shared/notifications",             Component: Notifications },
-          { path: "shared/messages",                  Component: Messaging },
           { path: "shared/announcements",             Component: Announcements },
           { path: "shared/ai-buddy",                  Component: AIBuddyPanel },
 

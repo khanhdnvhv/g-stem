@@ -6,7 +6,7 @@ import {
   AlertTriangle, FileText,
 } from "lucide-react";
 import { useAuth } from "./AuthContext";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 import { SUBSIDIARIES } from "./mock-data";
 
 // SVG Mini Charts

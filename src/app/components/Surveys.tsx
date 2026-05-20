@@ -16,7 +16,7 @@ import {
   SV001_NPS, SV001_AI_INSIGHTS, LEARNER_SURVEY_HISTORY,
   type Survey, type SurveyCategory,
 } from "./surveys/mock-data";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 type View = "list" | "builder" | "results" | "take";
 

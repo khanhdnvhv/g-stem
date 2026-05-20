@@ -11,7 +11,7 @@ import {
 import { useAuth } from "./AuthContext";
 import { useConfirm } from "./ConfirmDialog";
 import { EmptyState } from "./EmptyState";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 // ─── Types ───
 type RequestStatus = "pending" | "approved" | "rejected" | "revision";

@@ -4,10 +4,11 @@ import {
   Boxes, Plus, Minus, Check, X,
 } from "lucide-react";
 import { stemPackages, tenantsByType } from "../../mock-data/index";
+import { useAuth } from "../../AuthContext";
 import { PageHeader } from "../ui/PageHeader";
 import { TierBadge } from "../ui/badges";
 import { formatVND, formatVNDCompact } from "../ui/format";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  SALES APP — Chế độ "bán hàng" tối ưu cho mobile                  */
@@ -20,6 +21,14 @@ interface QuoteItem {
 }
 
 export function SalesApp() {
+  const { user } = useAuth();
+  // AD-04: distributor sees only packages from their parent supplier
+  const myTenantId = user?.tenantId ?? tenantsByType.distributor[0]?.id;
+  const parentSupplierId =
+    tenantsByType.distributor.find((d) => d.id === myTenantId)?.parentTenantId
+    ?? "T-SUP-01";
+  const availablePackages = stemPackages.filter((p) => p.supplierTenantId === parentSupplierId);
+
   const [selectedSchool, setSelectedSchool] = useState<string>(tenantsByType.school[0].id);
   const [items, setItems] = useState<QuoteItem[]>([]);
   const [discount, setDiscount] = useState(0);
@@ -42,7 +51,7 @@ export function SalesApp() {
   };
 
   const subtotal = items.reduce((s, it) => {
-    const pkg = stemPackages.find((p) => p.id === it.packageId);
+    const pkg = availablePackages.find((p) => p.id === it.packageId);
     return s + (pkg?.priceVND || 0) * it.quantity;
   }, 0);
   const discountAmount = subtotal * (discount / 100);
@@ -94,7 +103,7 @@ export function SalesApp() {
           </h3>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          {stemPackages.map((pkg) => (
+          {availablePackages.map((pkg) => (
             <button
               key={pkg.id}
               onClick={() => addItem(pkg.id)}
@@ -138,7 +147,7 @@ export function SalesApp() {
             </div>
           )}
           {items.map((it) => {
-            const pkg = stemPackages.find((p) => p.id === it.packageId)!;
+            const pkg = availablePackages.find((p) => p.id === it.packageId)!;
             return (
               <div key={it.packageId} className="p-4 flex items-center gap-3">
                 <div className="flex-1 min-w-0">

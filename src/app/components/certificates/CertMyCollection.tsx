@@ -10,7 +10,7 @@ import {
 import { MOCK_CERT_RECORDS } from "./cert-mock-data";
 import { DEFAULT_TEMPLATES, CertificatePreviewSVG, STATUS_CONFIG } from "./CertPreview";
 import type { CertRecord } from "./CertPreview";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 export function CertMyCollection() {
   const [selectedCert, setSelectedCert] = useState<CertRecord | null>(null);

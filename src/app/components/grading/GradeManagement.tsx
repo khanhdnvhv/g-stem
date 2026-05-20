@@ -8,7 +8,7 @@ import {
   MOCK_APPEALS, MOCK_INSTRUCTOR_METRICS, DEFAULT_GRADING_POLICY,
   type GradeAppeal, type AppealStatus, type GradingPolicy,
 } from "./mock-data";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 const APPEAL_STATUS_CONFIG: Record<AppealStatus, { label: string; color: string; bg: string }> = {
   pending: { label: "Chờ xử lý", color: "#f59e0b", bg: "#fef3c7" },

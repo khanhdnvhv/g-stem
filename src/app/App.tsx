@@ -13,9 +13,13 @@ export default function App() {
           <RouterProvider router={router} />
           <Toaster
             position="top-right"
-            richColors
             toastOptions={{
-              style: { fontSize: "13px" },
+              style: {
+                background: "transparent",
+                border: "none",
+                boxShadow: "none",
+                padding: 0,
+              },
             }}
           />
         </ConfirmProvider>

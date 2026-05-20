@@ -1,6 +1,6 @@
 import {
-  Sparkles, Trophy, Award, Bot, Target, CheckCircle2,
-  TrendingUp, BarChart3, BookOpen,
+  Sparkles, Trophy, Award, Target, CheckCircle2,
+  TrendingUp, BarChart3, BookOpen, Info,
 } from "lucide-react";
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
@@ -65,13 +65,8 @@ export function StudentAchievements() {
       <PageHeader
         icon={Sparkles}
         title="Thành tích của tôi"
-        subtitle="Huy hiệu, chứng chỉ và phân tích năng lực học tập từ AI-Buddy."
+        subtitle="Huy hiệu, chứng chỉ và phân tích năng lực học tập cá nhân."
         accentColor="#c8a84e"
-        badge={
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#7c3aed]/15 text-[#7c3aed] rounded" style={{ fontSize: "11px", fontWeight: 600 }}>
-            <Bot className="w-3 h-3" /> AI-Buddy phân tích
-          </span>
-        }
       />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -81,16 +76,16 @@ export function StudentAchievements() {
         <KpiCard icon={TrendingUp} label="Xếp hạng lớp" value="5/32" color="#990803" change="↑3" trend="up" />
       </div>
 
-      {/* AI-Buddy analysis */}
-      <div className="bg-gradient-to-br from-[#7c3aed]/10 to-[#2563eb]/5 rounded-xl border border-[#7c3aed]/30 p-4">
+      {/* Phân tích học tập */}
+      <div className="bg-gradient-to-br from-[#2563eb]/8 to-[#c8a84e]/5 rounded-xl border border-[#2563eb]/20 p-4">
         <div className="flex items-start gap-3">
-          <div className="w-12 h-12 rounded-xl bg-[#7c3aed]/20 flex items-center justify-center shrink-0">
-            <Bot className="w-6 h-6 text-[#7c3aed]" />
+          <div className="w-12 h-12 rounded-xl bg-[#2563eb]/15 flex items-center justify-center shrink-0">
+            <Info className="w-6 h-6 text-[#2563eb]" />
           </div>
           <div className="flex-1">
-            <p className="text-foreground" style={{ fontSize: "14px", fontWeight: 700 }}>AI-Buddy nhận xét</p>
+            <p className="text-foreground" style={{ fontSize: "14px", fontWeight: 700 }}>Phân tích học tập</p>
             <p className="text-muted-foreground mt-1" style={{ fontSize: "12.5px", lineHeight: 1.6 }}>
-              Điểm mạnh lớn nhất của bạn là <strong className="text-[#7c3aed]">{strongest.skill}</strong> ({strongest.value}%).
+              Điểm mạnh lớn nhất của bạn là <strong className="text-[#2563eb]">{strongest.skill}</strong> ({strongest.value}%).
               Bạn đã hoàn thành tốt các bài CT1 và đạt chứng chỉ CT3. Hãy tập trung cải thiện kỹ năng{" "}
               <strong className="text-[#dc2626]">{weakest.skill}</strong> ({weakest.value}%) bằng cách làm thêm bài tập thực hành nhóm.
               Để đạt "Siêu sao STEM", cần nâng điểm TB từ 8.3 → 9.0 trong kỳ tới.

@@ -12,7 +12,7 @@ import {
 } from "./mock-data";
 import { EmptyState } from "../EmptyState";
 import { useConfirm } from "../ConfirmDialog";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 interface SurveyListProps {
   onSelectSurvey: (id: string) => void;

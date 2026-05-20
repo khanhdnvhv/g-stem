@@ -1,5 +1,5 @@
 import { useAuth } from "./AuthContext";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 import { useState } from "react";
 import {
   Bot, Search, Settings, Activity, MessageCircle, Brain,

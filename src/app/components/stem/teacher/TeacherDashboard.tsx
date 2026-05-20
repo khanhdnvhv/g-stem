@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import {
   LayoutDashboard, Calendar, BookOpen, PenTool, Users,
   Award, Lightbulb, Activity, ChevronRight, ClipboardCheck,
@@ -16,6 +16,7 @@ import { formatDateTime, formatRelative } from "../ui/format";
 
 export function TeacherDashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   // Lấy tiết cho giáo viên theo id (fallback sang teacher 01)
   const myId = user?.id || "U-TCH-01";
@@ -41,7 +42,7 @@ export function TeacherDashboard() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <KpiCard icon={Calendar} label="Tiết STEM/tuần" value={mySchedule.length} color="#0891b2" />
         <KpiCard icon={Users} label="Lớp phụ trách" value={myClasses.size} color="#7c3aed" />
-        <KpiCard icon={PenTool} label="Bài chấm chờ" value={5} color="#f59e0b" trend="up" />
+        <KpiCard icon={PenTool} label="Bài chấm chờ" value={5} color="#f59e0b" trend="up" onClick={() => navigate("/teacher/grading")} />
         <KpiCard icon={Award} label="Chứng chỉ đạt được" value={3} color="#c8a84e" subtitle="Còn 2 cấp độ" />
       </div>
 

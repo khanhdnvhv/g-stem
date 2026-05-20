@@ -11,7 +11,7 @@ import { equipment, tenantsByType } from "../../mock-data/index";
 import { PageHeader } from "../ui/PageHeader";
 import { KpiCard } from "../ui/KpiCard";
 import { EquipmentStatusBadge } from "../ui/badges";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  EQUIPMENT COMPLIANCE MONITOR (Authority)                        */

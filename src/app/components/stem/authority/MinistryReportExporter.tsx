@@ -7,7 +7,7 @@ import { MINISTRY_REPORT_TEMPLATES, authorityReports } from "../../mock-data/ind
 import { PageHeader } from "../ui/PageHeader";
 import { KpiCard } from "../ui/KpiCard";
 import { formatDateTime, formatRelative } from "../ui/format";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  MINISTRY REPORT EXPORTER — Kết xuất báo cáo theo Thông tư        */

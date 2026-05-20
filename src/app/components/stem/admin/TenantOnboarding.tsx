@@ -7,7 +7,7 @@ import type { TenantType } from "../../mock-data/index";
 import { tenantTypeLabelsMap } from "../../AuthContext";
 import { PageHeader } from "../ui/PageHeader";
 import { TenantBadge } from "../ui/badges";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  TENANT ONBOARDING WIZARD — 4 bước khởi tạo tenant mới           */

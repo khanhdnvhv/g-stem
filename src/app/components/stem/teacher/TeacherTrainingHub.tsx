@@ -8,7 +8,7 @@ import type { StemProgram } from "../../mock-data/index";
 import { PageHeader } from "../ui/PageHeader";
 import { ProgramBadge } from "../ui/badges";
 import { KpiCard } from "../ui/KpiCard";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  TEACHER TRAINING HUB — kho tập huấn + đồng hành 5 năm            */

@@ -17,7 +17,7 @@ import {
   subsidiaryStats,
 } from "./mock-data";
 import { useAuth } from "./AuthContext";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 import { exportToCSV } from "./ExportManager";
 
 const engagementData = [

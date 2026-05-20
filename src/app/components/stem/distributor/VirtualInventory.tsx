@@ -12,7 +12,7 @@ import { PageHeader } from "../ui/PageHeader";
 import { TierBadge } from "../ui/badges";
 import { KpiCard } from "../ui/KpiCard";
 import { formatDateTime } from "../ui/format";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  VIRTUAL INVENTORY — Kho ảo đại lý                                */

@@ -1,35 +1,65 @@
 import { useState, useMemo } from "react";
+import { Link } from "react-router";
 import {
   FolderOpen, Search, Plus, Eye, Download, Pencil, Copy,
   BookOpen, CheckCircle2, Clock, TrendingUp, Filter,
 } from "lucide-react";
-import { lessons, STEM_PROGRAMS, SCHOOL_TIERS } from "../../mock-data/index";
-import type { StemProgram } from "../../mock-data/index";
+import { lessons, STEM_PROGRAMS, SCHOOL_TIERS, STUDIO_LESSONS, STEM_IMAGES } from "../../mock-data/index";
+import type { StemProgram, Lesson } from "../../mock-data/index";
 import { PageHeader } from "../ui/PageHeader";
 import { ProgramBadge } from "../ui/badges";
 import { KpiCard } from "../ui/KpiCard";
 import { formatRelative } from "../ui/format";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  CONTENT LIBRARY BANK — Ngân hàng Nội dung (Supplier)            */
 /*  Danh mục toàn bộ bài giảng đã publish, có filter + preview      */
 /* ================================================================ */
 
+import { CTSelectorWizard } from "./CTSelectorWizard";
+
 export function ContentLibraryBank() {
   const [search, setSearch] = useState("");
   const [programFilter, setProgramFilter] = useState<StemProgram | "all">("all");
   const [tierFilter, setTierFilter] = useState<string | "all">("all");
   const [view, setView] = useState<"grid" | "list">("grid");
+  const [wizardOpen, setWizardOpen] = useState(false);
 
-  // Attach mock usage stats to each lesson
-  const enriched = useMemo(() => lessons.map((l, i) => ({
-    ...l,
-    views: 800 + (i * 137) % 4000,
-    schoolsUsing: 5 + (i * 7) % 40,
-    rating: 3.8 + ((i * 11) % 15) / 10,
-    isPublished: i % 9 !== 0,
-  })), []);
+  // Hợp nhất: bài Ngân hàng (lessons[]) + bài Studio đã publish
+  const enriched = useMemo(() => {
+    /* Bài bank gốc */
+    const bankItems = lessons.map((l, i) => ({
+      ...l,
+      views: 800 + (i * 137) % 4000,
+      schoolsUsing: 5 + (i * 7) % 40,
+      rating: 3.8 + ((i * 11) % 15) / 10,
+      isPublished: i % 9 !== 0,
+      source: "bank" as const,
+    }));
+    /* Bài Studio đã publish — normalize về shape Lesson */
+    const studioItems = STUDIO_LESSONS
+      .filter((d) => d.status === "published")
+      .map((d, i): Lesson & { views: number; schoolsUsing: number; rating: number; isPublished: boolean; source: "studio" } => ({
+        id: d.id,
+        title: d.title,
+        description: `Bài giảng tự biên soạn từ Studio — ${d.subject}, ${d.grade}.`,
+        programCode: d.program,
+        gradeLevel: d.grade,
+        subject: d.subject,
+        durationMinutes: d.durationMinutes,
+        resourceUrls: [],
+        thumbnail: STEM_IMAGES[i % STEM_IMAGES.length],
+        createdBy: "NCC Studio",
+        createdAt: new Date().toISOString(),
+        views: 120 + (i * 53) % 800,
+        schoolsUsing: 1 + (i * 3) % 12,
+        rating: 4.0 + ((i * 7) % 10) / 10,
+        isPublished: true,
+        source: "studio",
+      }));
+    return [...bankItems, ...studioItems];
+  }, []);
 
   const filtered = useMemo(() => enriched.filter((l) => {
     if (programFilter !== "all" && l.programCode !== programFilter) return false;
@@ -59,7 +89,7 @@ export function ContentLibraryBank() {
               style={{ fontSize: "13px", fontWeight: 500 }}>
               <Download className="w-4 h-4" /> Nhập nội dung
             </button>
-            <button onClick={() => toast.success("Mở Studio biên soạn bài mới")}
+            <button onClick={() => setWizardOpen(true)}
               className="flex items-center gap-1.5 px-3 py-2 bg-[#990803] text-white rounded-lg hover:opacity-90"
               style={{ fontSize: "13px", fontWeight: 500 }}>
               <Plus className="w-4 h-4" /> Soạn bài mới
@@ -136,6 +166,11 @@ export function ContentLibraryBank() {
                       SGK
                     </span>
                   )}
+                  {l.source === "studio" && (
+                    <span className="px-2 py-0.5 bg-[#7c3aed] text-white rounded" style={{ fontSize: "10px", fontWeight: 700 }}>
+                      Studio
+                    </span>
+                  )}
                 </div>
                 <div className="absolute top-2 right-2">
                   {l.isPublished ? (
@@ -178,16 +213,16 @@ export function ContentLibraryBank() {
                   </div>
                 </div>
                 <div className="mt-2 flex gap-1">
-                  <button onClick={() => toast.info(`Xem ${l.title}`)}
+                  <Link to={`/supplier/content/library/${l.id}`}
                     className="flex-1 px-2 py-1.5 border border-border rounded hover:bg-secondary flex items-center justify-center gap-1"
                     style={{ fontSize: "11px", fontWeight: 500 }}>
                     <Eye className="w-3 h-3" /> Xem
-                  </button>
-                  <button onClick={() => toast.info(`Sửa ${l.title}`)}
+                  </Link>
+                  <Link to={`/supplier/content/library/${l.id}`}
                     className="flex-1 px-2 py-1.5 bg-[#990803] text-white rounded hover:opacity-90 flex items-center justify-center gap-1"
                     style={{ fontSize: "11px", fontWeight: 500 }}>
                     <Pencil className="w-3 h-3" /> Sửa
-                  </button>
+                  </Link>
                   <button onClick={() => toast.success("Đã duplicate bài giảng")}
                     className="px-2 py-1.5 border border-border rounded hover:bg-secondary" title="Duplicate">
                     <Copy className="w-3 h-3" />
@@ -228,12 +263,14 @@ export function ContentLibraryBank() {
                   <td className="px-4 py-3 text-[#c8a84e]" style={{ fontWeight: 600 }}>{l.rating.toFixed(1)}★</td>
                   <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: "11px" }}>{formatRelative(l.createdAt)}</td>
                   <td className="px-4 py-3 text-right">
-                    <button onClick={() => toast.info("Xem")} className="p-1.5 hover:bg-secondary rounded">
+                    <Link to={`/supplier/content/library/${l.id}`}
+                      className="inline-block p-1.5 hover:bg-secondary rounded">
                       <Eye className="w-4 h-4 text-muted-foreground" />
-                    </button>
-                    <button onClick={() => toast.info("Sửa")} className="p-1.5 hover:bg-secondary rounded ml-1">
+                    </Link>
+                    <Link to={`/supplier/content/library/${l.id}`}
+                      className="inline-block p-1.5 hover:bg-secondary rounded ml-1">
                       <Pencil className="w-4 h-4 text-muted-foreground" />
-                    </button>
+                    </Link>
                   </td>
                 </tr>
               ))}
@@ -241,6 +278,8 @@ export function ContentLibraryBank() {
           </table>
         </div>
       )}
+
+      <CTSelectorWizard open={wizardOpen} onClose={() => setWizardOpen(false)} />
     </div>
   );
 }

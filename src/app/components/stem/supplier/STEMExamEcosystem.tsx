@@ -1,8 +1,8 @@
 import { useState, useMemo } from "react";
+import { Link, useNavigate } from "react-router";
 import {
   ClipboardCheck, Plus, Calendar, Users, Award, Download,
-  Landmark, School as SchoolIcon, Building2, Globe,
-  Clock, CheckCircle2,
+  School as SchoolIcon, Clock, CheckCircle2, Info, PlayCircle,
 } from "lucide-react";
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
@@ -14,17 +14,19 @@ import { PageHeader } from "../ui/PageHeader";
 import { ProgramBadge } from "../ui/badges";
 import { KpiCard } from "../ui/KpiCard";
 import { formatDateTime, formatRelative } from "../ui/format";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
+import { ExamCreateWizard } from "./ExamCreateWizard";
 
 /* ================================================================ */
 /*  STEM EXAM ECOSYSTEM (Supplier) — NCC điều phối hệ sinh thái thi  */
 /* ================================================================ */
 
-const LEVEL_META: Record<STEMExam["level"], { label: string; color: string; icon: typeof SchoolIcon }> = {
+// V1 scope: school-level only — district/province/national → V2
+const LEVEL_META: Record<STEMExam["level"], { label: string; color: string; icon: typeof SchoolIcon; v2?: boolean }> = {
   school:   { label: "Cấp trường",     color: "#64748b", icon: SchoolIcon },
-  district: { label: "Cấp Quận/Huyện", color: "#0891b2", icon: Building2 },
-  province: { label: "Cấp Tỉnh/TP",    color: "#7c3aed", icon: Landmark },
-  national: { label: "Cấp Quốc gia",   color: "#dc2626", icon: Globe },
+  district: { label: "Cấp Quận/Huyện", color: "#0891b2", icon: SchoolIcon, v2: true },
+  province: { label: "Cấp Tỉnh/TP",    color: "#7c3aed", icon: SchoolIcon, v2: true },
+  national: { label: "Cấp Quốc gia",   color: "#dc2626", icon: SchoolIcon, v2: true },
 };
 
 const STATUS_META: Record<STEMExam["status"], { label: string; color: string }> = {
@@ -35,58 +37,74 @@ const STATUS_META: Record<STEMExam["status"], { label: string; color: string }> 
 };
 
 export function STEMExamEcosystem() {
+  const navigate = useNavigate();
+
+  // V1: chỉ hỗ trợ kỳ thi cấp trường — local state để wizard thêm kỳ thi mới
+  const [schoolExams, setSchoolExams] = useState<STEMExam[]>(
+    () => stemExams.filter((e) => e.level === "school"),
+  );
+
   const [levelFilter, setLevelFilter] = useState<STEMExam["level"] | "all">("all");
   const [statusFilter, setStatusFilter] = useState<STEMExam["status"] | "all">("all");
+  const [wizardOpen, setWizardOpen] = useState(false);
 
-  const filtered = useMemo(() => stemExams.filter((e) => {
+  const filtered = useMemo(() => schoolExams.filter((e) => {
     if (levelFilter !== "all" && e.level !== levelFilter) return false;
     if (statusFilter !== "all" && e.status !== statusFilter) return false;
     return true;
-  }), [levelFilter, statusFilter]);
+  }), [levelFilter, statusFilter, schoolExams]);
 
-  const totalParticipants = stemExams.reduce((s, e) => s + (e.totalParticipants || 0), 0);
-  const upcomingCount = stemExams.filter((e) => e.status === "upcoming").length;
-  const openCount = stemExams.filter((e) => e.status === "open").length;
-  const gradedCount = stemExams.filter((e) => e.status === "graded").length;
+  const totalParticipants = schoolExams.reduce((s, e) => s + (e.totalParticipants || 0), 0);
+  const upcomingCount = schoolExams.filter((e) => e.status === "upcoming").length;
+  const openCount = schoolExams.filter((e) => e.status === "open").length;
+  const gradedCount = schoolExams.filter((e) => e.status === "graded").length;
 
-  // Distribution by level
-  const byLevel = useMemo(() => (Object.keys(LEVEL_META) as STEMExam["level"][]).map((lv) => ({
-    level: LEVEL_META[lv].label,
-    count: stemExams.filter((e) => e.level === lv).length,
-    fill: LEVEL_META[lv].color,
-  })), []);
+  // Distribution — V1 only school level
+  const byLevel = useMemo(() => ([{
+    level: LEVEL_META.school.label,
+    count: schoolExams.length,
+    fill: LEVEL_META.school.color,
+  }]), [schoolExams]);
 
-  // Participation trend (mock by month)
-  const trend = [
-    { month: "T11", participants: 420 },
-    { month: "T12", participants: 580 },
-    { month: "T1", participants: 680 },
-    { month: "T2", participants: 750 },
-    { month: "T3", participants: 890 },
-    { month: "T4", participants: 1020 },
-  ];
+  // Participation trend — tính từ data thực theo tháng openAt
+  const trend = useMemo(() => {
+    const map = new Map<string, number>();
+    schoolExams.forEach((e) => {
+      const d = new Date(e.openAt);
+      const key = `T${d.getMonth() + 1}`;
+      map.set(key, (map.get(key) ?? 0) + (e.totalParticipants ?? 0));
+    });
+    return Array.from(map.entries())
+      .map(([month, participants]) => ({ month, participants }))
+      .slice(-6);
+  }, [schoolExams]);
 
   // Top 5 exams by participants
-  const topExams = [...stemExams]
+  const topExams = [...schoolExams]
     .filter((e) => e.totalParticipants)
     .sort((a, b) => (b.totalParticipants || 0) - (a.totalParticipants || 0))
     .slice(0, 5);
+
+  const handleCreateExam = (exam: STEMExam) => {
+    setSchoolExams((prev) => [exam, ...prev]);
+    toast.success(`Đã tạo kỳ thi "${exam.name}"`);
+  };
 
   return (
     <div className="space-y-5">
       <PageHeader
         icon={ClipboardCheck}
         title="Hệ sinh thái Kỳ thi STEM"
-        subtitle="Điều phối hệ thống kỳ thi STEM 4 cấp — từ trường, quận/huyện đến cấp tỉnh/quốc gia."
+        subtitle="Tạo và quản lý kỳ thi STEM cấp trường — đa chương trình CT1–CT5, tự động chấm điểm và công bố kết quả."
         accentColor="#990803"
         actions={
           <>
-            <button onClick={() => toast.info("Xuất danh sách kỳ thi cho các Sở GD&ĐT")}
+            <Link to="/supplier/exams/questions"
               className="flex items-center gap-1.5 px-3 py-2 border border-border bg-card rounded-lg hover:bg-secondary"
               style={{ fontSize: "13px", fontWeight: 500 }}>
-              <Download className="w-4 h-4" /> Xuất lịch
-            </button>
-            <button onClick={() => toast.success("Mở wizard tạo kỳ thi mới")}
+              <Calendar className="w-4 h-4" /> Ngân hàng câu hỏi
+            </Link>
+            <button onClick={() => setWizardOpen(true)}
               className="flex items-center gap-1.5 px-3 py-2 bg-[#990803] text-white rounded-lg hover:opacity-90"
               style={{ fontSize: "13px", fontWeight: 500 }}>
               <Plus className="w-4 h-4" /> Tạo kỳ thi
@@ -95,10 +113,19 @@ export function STEMExamEcosystem() {
         }
       />
 
+      {/* V1 scope notice */}
+      <div className="flex items-start gap-2.5 p-3 bg-[#0891b2]/8 border border-[#0891b2]/25 rounded-lg">
+        <Info className="w-4 h-4 text-[#0891b2] shrink-0 mt-0.5" />
+        <p className="text-muted-foreground" style={{ fontSize: "12px" }}>
+          <strong className="text-foreground">V1:</strong> Hiện tại hỗ trợ kỳ thi <strong>cấp trường</strong>.
+          Kỳ thi cấp quận/huyện, tỉnh/TP và quốc gia sẽ ra mắt tại <strong>V2</strong>.
+        </p>
+      </div>
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <KpiCard icon={ClipboardCheck} label="Tổng kỳ thi" value={stemExams.length} color="#990803" subtitle="Trong hệ sinh thái" />
+        <KpiCard icon={ClipboardCheck} label="Tổng kỳ thi" value={schoolExams.length} color="#990803" subtitle="Cấp trường" />
         <KpiCard icon={Clock} label="Sắp diễn ra" value={upcomingCount} color="#0891b2" />
-        <KpiCard icon={Users} label="Tổng thí sinh" value={totalParticipants.toLocaleString()} color="#16a34a" change="+28%" trend="up" />
+        <KpiCard icon={PlayCircle} label="Đang mở thi" value={openCount} color="#16a34a" subtitle={`${totalParticipants.toLocaleString()} thí sinh`} />
         <KpiCard icon={Award} label="Đã chấm / công bố" value={gradedCount} color="#c8a84e" />
       </div>
 
@@ -152,14 +179,29 @@ export function STEMExamEcosystem() {
         {(Object.keys(LEVEL_META) as STEMExam["level"][]).map((lv) => {
           const meta = LEVEL_META[lv];
           const active = levelFilter === lv;
+          const isV2 = meta.v2;
           return (
-            <button key={lv} onClick={() => setLevelFilter(lv)}
-              className={`px-3 py-1.5 rounded-lg border ${active ? "text-white border-transparent" : "bg-card border-border hover:bg-secondary"}`}
+            <button key={lv}
+              onClick={() => !isV2 && setLevelFilter(lv)}
+              disabled={isV2}
+              className={`relative px-3 py-1.5 rounded-lg border ${
+                isV2
+                  ? "bg-card border-border opacity-50 cursor-not-allowed"
+                  : active
+                    ? "text-white border-transparent"
+                    : "bg-card border-border hover:bg-secondary"
+              }`}
               style={{
                 fontSize: "12px", fontWeight: 500,
-                ...(active ? { backgroundColor: meta.color } : {}),
+                ...(active && !isV2 ? { backgroundColor: meta.color } : {}),
               }}>
               {meta.label}
+              {isV2 && (
+                <span className="ml-1.5 px-1 py-0.5 bg-[#0891b2] text-white rounded"
+                  style={{ fontSize: "9px", fontWeight: 700, verticalAlign: "middle" }}>
+                  V2
+                </span>
+              )}
             </button>
           );
         })}
@@ -225,21 +267,23 @@ export function STEMExamEcosystem() {
               </div>
 
               <div className="mt-3 pt-3 border-t border-border flex items-center gap-2 flex-wrap">
-                <button onClick={() => toast.info(`Chi tiết ${e.name}`)}
+                <button onClick={() => navigate(`/supplier/exams/${e.id}`)}
                   className="px-3 py-1.5 border border-border rounded hover:bg-secondary flex items-center gap-1"
                   style={{ fontSize: "11.5px", fontWeight: 500 }}>
                   <ClipboardCheck className="w-3.5 h-3.5" /> Chi tiết
                 </button>
-                <button onClick={() => toast.info(`Ngân hàng câu hỏi kỳ thi`)}
-                  className="px-3 py-1.5 border border-border rounded hover:bg-secondary flex items-center gap-1"
-                  style={{ fontSize: "11.5px", fontWeight: 500 }}>
-                  <Calendar className="w-3.5 h-3.5" /> Ngân hàng câu hỏi
-                </button>
                 {e.status === "graded" && (
-                  <button onClick={() => toast.info(`Xem bảng điểm`)}
+                  <button onClick={() => navigate(`/supplier/exams/${e.id}`)}
                     className="px-3 py-1.5 bg-[#c8a84e]/15 text-[#c8a84e] rounded flex items-center gap-1"
                     style={{ fontSize: "11.5px", fontWeight: 600 }}>
                     <Award className="w-3.5 h-3.5" /> Bảng điểm
+                  </button>
+                )}
+                {e.status === "closed" && (
+                  <button onClick={() => navigate(`/supplier/exams/${e.id}`)}
+                    className="px-3 py-1.5 bg-[#c8a84e] text-white rounded flex items-center gap-1"
+                    style={{ fontSize: "11.5px", fontWeight: 600 }}>
+                    <Award className="w-3.5 h-3.5" /> Chấm điểm
                   </button>
                 )}
                 <span className="ml-auto text-muted-foreground font-mono" style={{ fontSize: "10.5px" }}>{e.id}</span>
@@ -268,6 +312,12 @@ export function STEMExamEcosystem() {
           </BarChart>
         </ResponsiveContainer>
       </div>
+
+      <ExamCreateWizard
+        open={wizardOpen}
+        onClose={() => setWizardOpen(false)}
+        onCreate={handleCreateExam}
+      />
     </div>
   );
 }

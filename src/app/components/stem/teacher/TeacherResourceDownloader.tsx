@@ -1,24 +1,41 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
-  FolderOpen, Search, Download, FileText, Video, Image as ImageIcon,
-  BookOpen, Eye, Filter,
+  FolderOpen, Search, Download, FileText, Video,
+  BookOpen, Eye, Info,
 } from "lucide-react";
-import { lessons, STEM_PROGRAMS } from "../../mock-data/index";
+import { lessons, scheduleEntries, STEM_PROGRAMS } from "../../mock-data/index";
 import type { StemProgram } from "../../mock-data/index";
+import { useAuth } from "../../AuthContext";
 import { PageHeader } from "../ui/PageHeader";
 import { ProgramBadge } from "../ui/badges";
 import { KpiCard } from "../ui/KpiCard";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  TEACHER RESOURCE DOWNLOADER — tải giáo án CT1-CT5               */
 /* ================================================================ */
 
 export function TeacherResourceDownloader() {
+  const { user } = useAuth();
+  const myId = user?.id || "U-TCH-01";
+
   const [search, setSearch] = useState("");
   const [programFilter, setProgramFilter] = useState<StemProgram | "all">("all");
 
-  const filtered = lessons.filter((l) => {
+  // Derive teacher's assigned programs from schedule entries
+  const myPrograms = useMemo(() => {
+    const progs = new Set(
+      scheduleEntries.filter((s) => s.teacherId === myId).map((s) => s.programCode as StemProgram)
+    );
+    return progs.size > 0 ? progs : null; // null = no schedule yet, show all
+  }, [myId]);
+
+  const myLessons = useMemo(
+    () => myPrograms ? lessons.filter((l) => myPrograms.has(l.programCode as StemProgram)) : lessons,
+    [myPrograms]
+  );
+
+  const filtered = myLessons.filter((l) => {
     if (programFilter !== "all" && l.programCode !== programFilter) return false;
     if (search) {
       const s = search.toLowerCase();
@@ -36,9 +53,20 @@ export function TeacherResourceDownloader() {
         accentColor="#0891b2"
       />
 
+      {myPrograms && (
+        <div className="flex items-start gap-2 p-3 bg-[#0891b2]/8 border border-[#0891b2]/20 rounded-lg">
+          <Info className="w-4 h-4 text-[#0891b2] shrink-0 mt-0.5" />
+          <p className="text-muted-foreground" style={{ fontSize: "12px" }}>
+            Hiển thị học liệu theo chương trình bạn được phân công:{" "}
+            {Array.from(myPrograms).map((p) => <strong key={p} className="text-[#0891b2]">{p} </strong>)}.
+            Liên hệ quản lý trường để cập nhật phân công.
+          </p>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <KpiCard icon={BookOpen} label="Tổng bài giảng" value={lessons.length} color="#0891b2" />
-        <KpiCard icon={FileText} label="Có mapping SGK" value={lessons.filter((l) => l.sgkMapping).length} color="#2563eb" />
+        <KpiCard icon={BookOpen} label="Học liệu của tôi" value={myLessons.length} color="#0891b2" />
+        <KpiCard icon={FileText} label="Có mapping SGK" value={myLessons.filter((l) => l.sgkMapping).length} color="#2563eb" />
         <KpiCard icon={Video} label="Đã xem/tải" value="12" color="#c8a84e" />
         <KpiCard icon={Download} label="Lượt tải tuần này" value={5} color="#16a34a" trend="up" />
       </div>
@@ -54,11 +82,12 @@ export function TeacherResourceDownloader() {
         <button onClick={() => setProgramFilter("all")}
           className={`px-3 py-2 rounded-lg border ${programFilter === "all" ? "bg-[#0891b2] text-white border-[#0891b2]" : "bg-card border-border hover:bg-secondary"}`}
           style={{ fontSize: "12px", fontWeight: 500 }}>
-          Tất cả ({lessons.length})
+          Tất cả ({myLessons.length})
         </button>
         {(Object.keys(STEM_PROGRAMS) as StemProgram[]).map((code) => {
           const p = STEM_PROGRAMS[code];
-          const count = lessons.filter((l) => l.programCode === code).length;
+          const count = myLessons.filter((l) => l.programCode === code).length;
+          if (myPrograms && !myPrograms.has(code as StemProgram)) return null;
           return (
             <button key={code} onClick={() => setProgramFilter(code)}
               className={`px-3 py-2 rounded-lg border ${programFilter === code ? "text-white border-transparent" : "bg-card border-border hover:bg-secondary"}`}

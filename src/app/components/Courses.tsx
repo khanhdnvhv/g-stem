@@ -19,7 +19,7 @@ import {
 import { mockCourses, CATEGORIES, SUBSIDIARIES } from "./mock-data";
 import type { Course } from "./mock-data";
 import { useAuth } from "./AuthContext";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 import { useConfirm } from "./ConfirmDialog";
 import { CourseFormModal } from "./CourseFormModal";
 

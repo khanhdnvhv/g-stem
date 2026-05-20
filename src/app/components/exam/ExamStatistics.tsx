@@ -15,7 +15,7 @@ import {
   QUESTION_TYPE_CONFIG,
   EXAM_TYPE_CONFIG,
 } from "./types";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 // ── Custom SVG Charts ──
 function ScoreDistributionChart({ data }: { data: { range: string; count: number; color: string }[] }) {
