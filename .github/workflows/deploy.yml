@@ -32,7 +32,7 @@ jobs:
 
       - name: Build
         env:
-          VITE_BASE_PATH: /stem/
+          VITE_BASE_PATH: /g-stem/
         run: npm run build
 
       - name: Copy 404 SPA fallback into dist
