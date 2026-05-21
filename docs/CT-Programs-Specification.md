@@ -90,7 +90,7 @@ Trích từ Sheet `CT1` đến `CT5`. Mỗi sheet là ma trận **đơn vị bà
 
 | # | Loại học liệu | Người dùng cuối | Bắt buộc? | Loại file |
 |---|---|---|---|---|
-| 1 | **Kế hoạch tổ chức** (phân phối chương trình theo tháng/tuần) | CBQL, GV | Có | .docx, .pdf |
+| 1 | **Kế hoạch giáo dục** (phân phối chương trình theo tháng/tuần) | CBQL, GV | Có | .docx, .pdf |
 | 2 | **Tài liệu bồi dưỡng giáo viên** | CBQL, GV | Có | .pdf, video |
 | 3 | **Kế hoạch bài dạy** theo bài học/chủ đề | GV | **Bắt buộc** | .docx |
 | 4 | **Bài giảng (PPTX)** theo bài học/chủ đề | GV | **Bắt buộc** | .pptx |
@@ -731,7 +731,7 @@ export const CT4_MODULES = [
 
 // 9 attachment slots chuẩn
 export const ATTACHMENT_SLOT_TEMPLATES = [
-  { type: "organization_plan",     label: "Kế hoạch tổ chức",                 forUser: "CBQL,GV",   required: true,  acceptedTypes: [".docx", ".pdf"] },
+  { type: "organization_plan",     label: "Kế hoạch giáo dục",                 forUser: "CBQL,GV",   required: true,  acceptedTypes: [".docx", ".pdf"] },
   { type: "teacher_training_doc",  label: "Tài liệu bồi dưỡng giáo viên",     forUser: "CBQL,GV",   required: true,  acceptedTypes: [".pdf", "video"] },
   { type: "lesson_plan",           label: "Kế hoạch bài dạy",                 forUser: "GV",        required: true,  acceptedTypes: [".docx"] },
   { type: "pptx",                  label: "Bài giảng PPTX",                   forUser: "GV",        required: true,  acceptedTypes: [".pptx"] },

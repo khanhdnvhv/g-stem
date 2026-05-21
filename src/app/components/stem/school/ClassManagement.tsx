@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { Link } from "react-router";
+﻿import { useState } from "react";
+import { Link, useNavigate } from "react-router";
 import {
-  UsersRound, Search, Plus, GraduationCap, BookOpen,
-  Calendar, ChevronRight, Layers, Target, Filter,
+  UsersRound, Search, GraduationCap, BookOpen,
+  Calendar, Layers, Target, Filter, UserCheck,
 } from "lucide-react";
 import { classesBySchool, tenantsByType, type SchoolClass } from "../../mock-data/index";
 import { useAuth } from "../../AuthContext";
@@ -22,6 +22,8 @@ export function ClassManagement() {
 
   const [search, setSearch] = useState("");
   const [gradeFilter, setGradeFilter] = useState<number | "all">("all");
+  const [assignDialog, setAssignDialog] = useState<{ open: boolean; className: string } | null>(null);
+  const navigate = useNavigate();
 
   const filtered = classes.filter((cls) => {
     if (gradeFilter !== "all" && cls.grade !== gradeFilter) return false;
@@ -69,17 +71,7 @@ export function ClassManagement() {
         icon={UsersRound}
         title="Quản lý Lớp học"
         subtitle="Danh sách lớp, phân công giáo viên STEM và theo dõi tiến độ."
-        accentColor="#2563eb"
-        actions={
-          <button
-            onClick={() => toast.info("Tính năng thêm lớp đang phát triển")}
-            className="flex items-center gap-1.5 px-3 py-2 bg-[#2563eb] text-white rounded-lg hover:opacity-90 transition-opacity"
-            style={{ fontSize: "13px", fontWeight: 500 }}
-          >
-            <Plus className="w-4 h-4" />
-            Thêm lớp
-          </button>
-        }
+        accentColor="#990803"
       />
 
       {/* KPI Row */}
@@ -120,7 +112,7 @@ export function ClassManagement() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Tìm lớp, GVCN, GV STEM..."
-            className="w-full pl-9 pr-3 py-2 bg-card border border-border rounded-lg outline-none focus:border-[#2563eb]"
+            className="w-full pl-9 pr-3 py-2 bg-card border border-border rounded-lg outline-none focus:border-[#990803]"
             style={{ fontSize: "13px" }}
           />
         </div>
@@ -132,7 +124,7 @@ export function ClassManagement() {
               onClick={() => setGradeFilter(tab.value)}
               className={`px-3 py-1.5 rounded-lg border transition-colors ${
                 gradeFilter === tab.value
-                  ? "bg-[#2563eb] text-white border-[#2563eb]"
+                  ? "bg-[#990803] text-white border-[#990803]"
                   : "bg-card border-border hover:bg-secondary text-foreground"
               }`}
               style={{ fontSize: "12px", fontWeight: 500 }}
@@ -155,6 +147,7 @@ export function ClassManagement() {
                   "GVCN",
                   "GV STEM",
                   "CT STEM",
+                  "Khóa STEM đang học",
                   "Tiết/tuần",
                   "Phòng học",
                   "Điểm TB",
@@ -173,7 +166,7 @@ export function ClassManagement() {
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-10 text-center text-muted-foreground" style={{ fontSize: "13px" }}>
+                  <td colSpan={10} className="px-4 py-10 text-center text-muted-foreground" style={{ fontSize: "13px" }}>
                     Không tìm thấy lớp nào.
                   </td>
                 </tr>
@@ -231,6 +224,14 @@ export function ClassManagement() {
                           ))}
                         </div>
                       </td>
+                      {/* Khóa STEM đang học */}
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap gap-1">
+                          {(cls.stemPrograms.length > 0 ? cls.stemPrograms.slice(0, 2) : ["CT1"]).map((p) => (
+                            <ProgramBadge key={p} code={p} size="xs" />
+                          ))}
+                        </div>
+                      </td>
                       {/* Tiết/tuần */}
                       <td className="px-4 py-3">
                         <span
@@ -266,14 +267,24 @@ export function ClassManagement() {
                       </td>
                       {/* Actions */}
                       <td className="px-4 py-3">
-                        <Link
-                          to={`/school/classes/${cls.id}`}
-                          className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-[#2563eb15] text-[#2563eb] rounded-lg hover:bg-[#2563eb] hover:text-white transition-colors"
-                          style={{ fontSize: "11.5px", fontWeight: 500 }}
-                        >
-                          Xem chi tiết
-                          <ChevronRight className="w-3.5 h-3.5" />
-                        </Link>
+                        <div className="flex items-center gap-1">
+                          <button
+                            title="Phân công GV"
+                            onClick={() => setAssignDialog({ open: true, className: cls.name })}
+                            className="inline-flex items-center gap-1 px-2 py-1.5 bg-[#2563eb15] text-[#2563eb] rounded-lg hover:bg-[#990803] hover:text-white transition-colors"
+                            style={{ fontSize: "11.5px", fontWeight: 500 }}
+                          >
+                            <UserCheck className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            title="Xem TKB"
+                            onClick={() => navigate(`/school/schedule?class=${encodeURIComponent(cls.name)}`)}
+                            className="inline-flex items-center gap-1 px-2 py-1.5 bg-secondary text-foreground rounded-lg hover:bg-border transition-colors"
+                            style={{ fontSize: "11.5px", fontWeight: 500 }}
+                          >
+                            <Calendar className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -299,6 +310,74 @@ export function ClassManagement() {
         </div>
       </div>
 
+      {/* Assignment Dialog */}
+      {assignDialog?.open && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={() => setAssignDialog(null)}
+        >
+          <div
+            className="bg-card rounded-2xl border border-border w-full max-w-md shadow-2xl p-6 space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 style={{ fontSize: "16px", fontWeight: 700 }}>
+              Phân công GV STEM — {assignDialog.className}
+            </h2>
+            <div className="space-y-3">
+              <div>
+                <label className="text-muted-foreground block mb-1" style={{ fontSize: "12px", fontWeight: 500 }}>
+                  Chương trình STEM
+                </label>
+                <select
+                  className="w-full px-3 py-2 bg-secondary border border-border rounded-lg"
+                  style={{ fontSize: "13px" }}
+                >
+                  <option>CT1 — Toán học Sáng tạo</option>
+                  <option>CT2 — STEM Liên môn</option>
+                  <option>CT3 — Tăng cường thực hành</option>
+                  <option>CT4 — Robotics & AI</option>
+                  <option>CT5 — CLB Sáng tạo</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-muted-foreground block mb-1" style={{ fontSize: "12px", fontWeight: 500 }}>
+                  Giáo viên phụ trách
+                </label>
+                <select
+                  className="w-full px-3 py-2 bg-secondary border border-border rounded-lg"
+                  style={{ fontSize: "13px" }}
+                >
+                  <option>Phạm Anh Tuấn (CT1, CT2)</option>
+                  <option>Nguyễn Thị Lan (CT1)</option>
+                  <option>Trần Văn Hùng (CT2, CT3)</option>
+                  <option>Lê Minh Trang (CT3)</option>
+                  <option>Vũ Thanh Hương (CT4, CT5)</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end pt-2">
+              <button
+                onClick={() => setAssignDialog(null)}
+                className="px-4 py-2 border border-border bg-card rounded-lg"
+                style={{ fontSize: "13px" }}
+              >
+                Huỷ
+              </button>
+              <button
+                onClick={() => {
+                  toast.success(`Đã lưu phân công cho ${assignDialog.className}`);
+                  setAssignDialog(null);
+                }}
+                className="px-4 py-2 bg-[#990803] text-white rounded-lg"
+                style={{ fontSize: "13px", fontWeight: 500 }}
+              >
+                Lưu phân công
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* STEM Teacher Assignment Summary */}
       <div className="bg-card border border-border rounded-xl p-5">
         <div className="flex items-center gap-2 mb-4">
@@ -318,7 +397,7 @@ export function ClassManagement() {
                 style={{
                   fontSize: "12px",
                   fontWeight: 700,
-                  background: "linear-gradient(145deg, #2563eb, #1e40af)",
+                  background: "linear-gradient(145deg, #990803, #7a0602)",
                 }}
               >
                 {info.name

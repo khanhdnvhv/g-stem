@@ -1,8 +1,8 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Link } from "react-router";
 import {
   BookOpen, Search, Plus, TrendingUp, Calendar, Users, CheckCircle2,
-  Clock, AlertTriangle, ShoppingBag, ChevronRight,
+  Clock, AlertTriangle, ShoppingBag, ChevronRight, X, RefreshCw, Layers,
 } from "lucide-react";
 import {
   coursesBySchool, tenantsByType,
@@ -87,10 +87,21 @@ export function CourseList() {
   const { user } = useAuth();
   const tenantId = user?.tenantType === "school" ? user.tenantId : tenantsByType.school[0].id;
 
-  const courses = coursesBySchool(tenantId);
+  const [courses, setCourses] = useState<SchoolCourse[]>(() => {
+    const base = coursesBySchool(tenantId);
+    try {
+      const stored = localStorage.getItem(`gstem_courses_${tenantId}`);
+      if (stored) return [...base, ...(JSON.parse(stored) as SchoolCourse[])];
+    } catch { /* ignore */ }
+    return base;
+  });
 
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "expired">("all");
   const [search, setSearch] = useState("");
+  const [detailCourse, setDetailCourse] = useState<SchoolCourse | null>(null);
+  const [renewCourse, setRenewCourse] = useState<SchoolCourse | null>(null);
+  const [renewDuration, setRenewDuration] = useState("12");
+  const [renewNote, setRenewNote] = useState("");
 
   // KPI
   const activeCourses = courses.filter((c) => c.status === "active");
@@ -119,11 +130,11 @@ export function CourseList() {
         icon={BookOpen}
         title="Khóa STEM đã mua"
         subtitle="Danh sách gói học liệu đang sử dụng và lịch sử mua hàng."
-        accentColor="#2563eb"
+        accentColor="#990803"
         actions={
           <Link
             to="/school/purchase"
-            className="flex items-center gap-1.5 px-3 py-2 bg-[#2563eb] text-white rounded-lg hover:opacity-90"
+            className="flex items-center gap-1.5 px-3 py-2 bg-[#990803] text-white rounded-lg hover:opacity-90"
             style={{ fontSize: "13px", fontWeight: 500 }}
           >
             <ShoppingBag className="w-4 h-4" /> Mua thêm khóa học
@@ -148,7 +159,7 @@ export function CourseList() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Tìm chương trình, môn học..."
-            className="w-full pl-9 pr-3 py-2 bg-card border border-border rounded-lg outline-none focus:border-[#2563eb]"
+            className="w-full pl-9 pr-3 py-2 bg-card border border-border rounded-lg outline-none focus:border-[#990803]"
             style={{ fontSize: "13px" }}
           />
         </div>
@@ -283,7 +294,7 @@ export function CourseList() {
                     <Plus className="w-3.5 h-3.5" /> Phân bổ cho lớp
                   </Link>
                   <button
-                    onClick={() => toast.info(`Chi tiết khóa học: ${course.programName} — ${course.packageTier}`)}
+                    onClick={() => setDetailCourse(course)}
                     className="flex items-center justify-center gap-1 px-3 py-2 border border-border rounded-lg hover:bg-secondary transition-colors"
                     style={{ fontSize: "12px", fontWeight: 500 }}
                   >
@@ -323,14 +334,191 @@ export function CourseList() {
                   </div>
                 </div>
                 <button
-                  onClick={() => toast.info(`Yêu cầu gia hạn khóa học: ${course.programName}`)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 border border-[#2563eb]/30 text-[#2563eb] rounded-lg hover:bg-[#2563eb]/10 transition-colors shrink-0"
+                  onClick={() => { setRenewCourse(course); setRenewNote(""); }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 border border-[#990803]/30 text-[#2563eb] rounded-lg hover:bg-[#2563eb]/10 transition-colors shrink-0"
                   style={{ fontSize: "12px", fontWeight: 600 }}
                 >
                   <TrendingUp className="w-3.5 h-3.5" /> Gia hạn
                 </button>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+      {/* ── Course Detail Modal ── */}
+      {detailCourse && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setDetailCourse(null); }}
+        >
+          <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <ProgramChip code={detailCourse.programCode} />
+                <TierChip tier={detailCourse.packageTier} />
+                <StatusChip status={detailCourse.status} />
+              </div>
+              <button onClick={() => setDetailCourse(null)} className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-secondary">
+                <X className="w-4 h-4 text-muted-foreground" />
+              </button>
+            </div>
+            {/* Body */}
+            <div className="px-5 py-4 overflow-y-auto space-y-4">
+              <div>
+                <h3 style={{ fontSize: "18px", fontWeight: 800 }}>{detailCourse.programName}</h3>
+                <p className="text-muted-foreground mt-0.5" style={{ fontSize: "13px" }}>
+                  {detailCourse.subject} · Khối {detailCourse.grade}
+                </p>
+              </div>
+
+              <dl className="grid grid-cols-2 gap-3">
+                <div>
+                  <dt className="text-xs text-muted-foreground">Ngày mua</dt>
+                  <dd className="text-sm font-semibold mt-0.5">{formatDate(detailCourse.purchaseDate)}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-muted-foreground">Hết hạn</dt>
+                  <dd className="text-sm font-semibold mt-0.5">{formatDate(detailCourse.expiryDate)}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-muted-foreground">License / Đã dùng</dt>
+                  <dd className="text-sm font-semibold mt-0.5">{detailCourse.seatsUsed} / {detailCourse.licenseSeats} chỗ</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-muted-foreground">Bài học hoàn thành</dt>
+                  <dd className="text-sm font-semibold mt-0.5">{detailCourse.completedLessons} / {detailCourse.totalLessons} bài</dd>
+                </div>
+              </dl>
+
+              {/* Progress */}
+              <div className="space-y-2">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-semibold flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" />Tiến độ học</span>
+                    <span className="text-xs font-bold" style={{ color: "#16a34a" }}>
+                      {detailCourse.totalLessons > 0 ? Math.round(detailCourse.completedLessons / detailCourse.totalLessons * 100) : 0}%
+                    </span>
+                  </div>
+                  <div className="h-2.5 bg-secondary rounded-full overflow-hidden">
+                    <div className="h-full rounded-full" style={{ width: `${detailCourse.totalLessons > 0 ? Math.round(detailCourse.completedLessons / detailCourse.totalLessons * 100) : 0}%`, backgroundColor: "#16a34a" }} />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-semibold flex items-center gap-1"><Users className="w-3.5 h-3.5" />Sử dụng license</span>
+                    <span className="text-xs font-bold" style={{ color: detailCourse.seatsUsed / detailCourse.licenseSeats >= 0.9 ? "#dc2626" : "#2563eb" }}>
+                      {detailCourse.licenseSeats > 0 ? Math.round(detailCourse.seatsUsed / detailCourse.licenseSeats * 100) : 0}%
+                    </span>
+                  </div>
+                  <div className="h-2.5 bg-secondary rounded-full overflow-hidden">
+                    <div className="h-full rounded-full" style={{ width: `${detailCourse.licenseSeats > 0 ? Math.round(detailCourse.seatsUsed / detailCourse.licenseSeats * 100) : 0}%`, backgroundColor: detailCourse.seatsUsed / detailCourse.licenseSeats >= 0.9 ? "#dc2626" : "#2563eb" }} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Assigned classes */}
+              {detailCourse.assignedClasses.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold flex items-center gap-1 mb-2"><Layers className="w-3.5 h-3.5 text-[#2563eb]" />Lớp được phân bổ ({detailCourse.assignedClasses.length})</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {detailCourse.assignedClasses.map((cls) => (
+                      <span key={cls} className="px-2.5 py-1 bg-[#2563eb]/10 text-[#2563eb] rounded-lg" style={{ fontSize: "12px", fontWeight: 600 }}>{cls}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+            </div>
+            {/* Footer */}
+            <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-border bg-secondary/20 shrink-0">
+              <button onClick={() => setDetailCourse(null)} className="px-4 py-2 border border-border rounded-lg hover:bg-secondary text-sm">Đóng</button>
+              <Link
+                to={`/school/courses/${detailCourse.id}/assign`}
+                className="flex items-center gap-1.5 px-4 py-2 bg-[#990803] text-white rounded-lg hover:opacity-90 text-sm font-semibold"
+                onClick={() => setDetailCourse(null)}
+              >
+                <Users className="w-4 h-4" /> Phân bổ cho lớp
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Renewal Request Dialog ── */}
+      {renewCourse && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setRenewCourse(null); }}
+        >
+          <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+              <div className="flex items-center gap-2">
+                <RefreshCw className="w-4 h-4 text-[#2563eb]" />
+                <h3 style={{ fontSize: "15px", fontWeight: 700 }}>Yêu cầu gia hạn</h3>
+              </div>
+              <button onClick={() => setRenewCourse(null)} className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-secondary">
+                <X className="w-4 h-4 text-muted-foreground" />
+              </button>
+            </div>
+            <div className="px-5 py-4 space-y-4">
+              <div className="p-3 bg-secondary/40 rounded-lg" style={{ fontSize: "12.5px" }}>
+                <p className="font-semibold text-foreground">{renewCourse.programName}</p>
+                <p className="text-muted-foreground mt-0.5">{renewCourse.subject} · Khối {renewCourse.grade}</p>
+                <p className="text-red-600 mt-1" style={{ fontSize: "11.5px" }}>
+                  Hết hạn: {formatDate(renewCourse.expiryDate)}
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-foreground" style={{ fontSize: "12.5px", fontWeight: 600 }}>
+                  Thời hạn gia hạn <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={renewDuration}
+                  onChange={(e) => setRenewDuration(e.target.value)}
+                  className="w-full px-3 py-2 bg-background border border-border rounded-lg outline-none focus:border-[#990803] text-sm"
+                >
+                  <option value="6">6 tháng</option>
+                  <option value="12">12 tháng</option>
+                  <option value="24">24 tháng</option>
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-foreground" style={{ fontSize: "12.5px", fontWeight: 600 }}>Ghi chú</label>
+                <textarea
+                  value={renewNote}
+                  onChange={(e) => setRenewNote(e.target.value)}
+                  placeholder="Ghi chú thêm cho yêu cầu gia hạn..."
+                  rows={3}
+                  className="w-full px-3 py-2 bg-background border border-border rounded-lg outline-none focus:border-[#990803] resize-none text-sm"
+                />
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-border bg-secondary/20">
+              <button onClick={() => setRenewCourse(null)} className="px-4 py-2 border border-border rounded-lg hover:bg-secondary text-sm">Huỷ</button>
+              <button
+                onClick={() => {
+                  const months = parseInt(renewDuration, 10);
+                  const base = new Date(renewCourse.status === "expired" ? Date.now() : renewCourse.expiryDate);
+                  base.setMonth(base.getMonth() + months);
+                  const newExpiry = base.toISOString().split("T")[0];
+                  setCourses((prev) =>
+                    prev.map((c) =>
+                      c.id === renewCourse.id
+                        ? { ...c, status: "active", expiryDate: newExpiry }
+                        : c,
+                    ),
+                  );
+                  toast.success(`Đã gia hạn "${renewCourse.programName}" thêm ${months} tháng — hết hạn ${newExpiry.split("-").reverse().join("/")}.`);
+                  setRenewCourse(null);
+                  setRenewNote("");
+                  setRenewDuration("12");
+                }}
+                className="flex items-center gap-1.5 px-4 py-2 bg-[#990803] text-white rounded-lg hover:opacity-90 text-sm font-semibold"
+              >
+                <RefreshCw className="w-4 h-4" /> Gửi yêu cầu gia hạn
+              </button>
+            </div>
           </div>
         </div>
       )}

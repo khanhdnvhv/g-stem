@@ -1,15 +1,12 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Network, Database, IdCard, RefreshCw, CheckCircle2, AlertTriangle,
-  Clock, Download, Play, ArrowDown, ArrowUp,
+  Clock, FileText, Play, ArrowDown, ArrowUp, StopCircle, RotateCcw,
 } from "lucide-react";
-import { dataSyncRecords } from "../../mock-data/index";
-import type { DataSyncRecord } from "../../mock-data/index";
-import { PageHeader } from "../ui/PageHeader";
-import { KpiCard } from "../ui/KpiCard";
-import { DataQualityBadge } from "../ui/badges";
-import { formatDateTime, formatRelative } from "../ui/format";
-import { toast } from "@/app/lib/toast";
+import { dataSyncRecords } from "./authority-data";
+import type { DataSyncRecord } from "./authority-data";
+import { PageHeader, KpiCard, DataQualityBadge, formatDateTime, formatRelative } from "./authority-ui";
+import { toast } from "sonner";
 
 /* ================================================================ */
 /*  NATIONAL DATA SYNC — Đồng bộ CSDL Quốc gia + VNeID              */
@@ -29,6 +26,13 @@ const STATUS_META: Record<DataSyncRecord["status"], { label: string; color: stri
   error:   { label: "Lỗi",             color: "#dc2626" },
 };
 
+function formatDuration(startedAt: string, finishedAt?: string): string {
+  if (!finishedAt) return "—";
+  const mins = Math.round((new Date(finishedAt).getTime() - new Date(startedAt).getTime()) / 60000);
+  if (mins < 1) return "<1 phút";
+  return `${mins} phút`;
+}
+
 export function NationalDataSync() {
   const [sourceFilter, setSourceFilter] = useState<DataSyncRecord["source"] | "all">("all");
 
@@ -37,13 +41,24 @@ export function NationalDataSync() {
   );
 
   const totalRecords = dataSyncRecords.reduce((s, r) => s + r.count, 0);
-  const errorCount = dataSyncRecords.filter((r) => r.status === "error").length;
-  const doneCount = dataSyncRecords.filter((r) => r.status === "done").length;
+  const errorCount   = dataSyncRecords.filter((r) => r.status === "error").length;
   const runningCount = dataSyncRecords.filter((r) => r.status === "running").length;
+  const doneCount    = dataSyncRecords.filter((r) => r.status === "done").length;
 
-  // 4Đ overall score
-  const allQuality = dataSyncRecords.flatMap((r) => [r.quality4D.dung, r.quality4D.du, r.quality4D.sach, r.quality4D.song]);
-  const qualityScore = Math.round((allQuality.filter(Boolean).length / allQuality.length) * 100);
+  // 4Đ overall score — chỉ tính phiên đã hoàn tất
+  const allQuality = dataSyncRecords
+    .filter((r) => r.status === "done")
+    .flatMap((r) => [r.quality4D.dung, r.quality4D.du, r.quality4D.sach, r.quality4D.song]);
+  const qualityScore = allQuality.length
+    ? Math.round((allQuality.filter(Boolean).length / allQuality.length) * 100)
+    : 0;
+
+  const updatedAt = useMemo(() => {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, "0");
+    const mi = String(now.getMinutes()).padStart(2, "0");
+    return `${hh}:${mi}`;
+  }, []);
 
   return (
     <div className="space-y-5">
@@ -54,7 +69,12 @@ export function NationalDataSync() {
         accentColor="#7c3aed"
         actions={
           <>
-            <button onClick={() => toast.success("Đã kích hoạt sync toàn bộ 4 nguồn")}
+            <button
+              onClick={() => {
+                if (window.confirm("Đồng bộ toàn bộ 4 nguồn ngay? Hành động này sẽ tạo 4 phiên mới.")) {
+                  toast.success("Đã kích hoạt sync toàn bộ 4 nguồn");
+                }
+              }}
               className="flex items-center gap-1.5 px-3 py-2 bg-[#7c3aed] text-white rounded-lg hover:opacity-90"
               style={{ fontSize: "13px", fontWeight: 500 }}>
               <Play className="w-4 h-4" /> Sync toàn bộ
@@ -62,7 +82,7 @@ export function NationalDataSync() {
             <button onClick={() => toast.info("Xem log lỗi chi tiết")}
               className="flex items-center gap-1.5 px-3 py-2 border border-border bg-card rounded-lg hover:bg-secondary"
               style={{ fontSize: "13px", fontWeight: 500 }}>
-              <Download className="w-4 h-4" /> Tải log
+              <FileText className="w-4 h-4" /> Xem log
             </button>
           </>
         }
@@ -70,10 +90,13 @@ export function NationalDataSync() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <KpiCard icon={Database} label="Tổng bản ghi đồng bộ" value={totalRecords.toLocaleString()} color="#7c3aed" change="+12k" trend="up" />
-        <KpiCard icon={CheckCircle2} label="Đạt chất lượng 4Đ" value={`${qualityScore}%`} color="#16a34a" subtitle="Đúng · Đủ · Sạch · Sống" />
+        <KpiCard icon={CheckCircle2} label="Đạt chất lượng 4Đ" value={`${qualityScore}%`} color="#16a34a" subtitle={`${doneCount} phiên hoàn tất · Đúng · Đủ · Sạch · Sống`} />
         <KpiCard icon={RefreshCw} label="Đang chạy" value={runningCount} color="#0891b2" />
-        <KpiCard icon={AlertTriangle} label="Lỗi cần xử lý" value={errorCount} color="#dc2626" trend={errorCount > 0 ? "up" : "flat"} />
+        <KpiCard icon={AlertTriangle} label="Lỗi cần xử lý" value={errorCount} color="#dc2626" />
       </div>
+      <p className="text-muted-foreground" style={{ fontSize: "11px", marginTop: "-8px" }}>
+        Cập nhật lúc {updatedAt} · {dataSyncRecords.length} phiên trong lịch sử
+      </p>
 
       {/* 4 nguồn tích hợp */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -81,16 +104,22 @@ export function NationalDataSync() {
           const meta = SOURCE_META[src];
           const Icon = meta.icon;
           const records = dataSyncRecords.filter((r) => r.source === src);
-          const lastSync = records[0];
+          const allError = records.length > 0 && records.every((r) => r.status === "error");
+          const lastSync = [...records].sort((a, b) => b.startedAt.localeCompare(a.startedAt))[0];
           return (
-            <div key={src} className="bg-card rounded-xl border border-border p-4 hover:shadow-md">
+            <div key={src}
+              className="bg-card rounded-xl border p-4 hover:shadow-md"
+              style={{ borderColor: allError ? "#dc2626" : "var(--border)" }}>
               <div className="flex items-start gap-3 mb-3">
                 <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
                   style={{ backgroundColor: meta.color + "15" }}>
                   <Icon className="w-5 h-5" style={{ color: meta.color }} />
                 </div>
                 <div className="flex-1">
-                  <h3 style={{ fontSize: "13px", fontWeight: 700 }}>{meta.label}</h3>
+                  <div className="flex items-center gap-1.5">
+                    <h3 style={{ fontSize: "13px", fontWeight: 700 }}>{meta.label}</h3>
+                    {allError && <AlertTriangle className="w-3.5 h-3.5 text-red-500" />}
+                  </div>
                   <p className="text-muted-foreground" style={{ fontSize: "11px" }}>
                     {records.length} phiên đồng bộ
                   </p>
@@ -141,21 +170,29 @@ export function NationalDataSync() {
       <div className="bg-card rounded-xl border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-secondary/50 text-left text-muted-foreground" style={{ fontSize: "11px", fontWeight: 600 }}>
+            <thead className="bg-secondary/50 text-left text-muted-foreground text-xs font-semibold">
               <tr>
                 <th className="px-4 py-2.5">Mã phiên</th>
                 <th className="px-4 py-2.5">Nguồn</th>
-                <th className="px-4 py-2.5">Chiều</th>
+                <th className="px-4 py-2.5">Chiều ↑↓</th>
                 <th className="px-4 py-2.5">Entity</th>
                 <th className="px-4 py-2.5 text-right">Bản ghi</th>
                 <th className="px-4 py-2.5">Trạng thái</th>
                 <th className="px-4 py-2.5">Chất lượng 4Đ</th>
                 <th className="px-4 py-2.5">Bắt đầu</th>
+                <th className="px-4 py-2.5">Thời lượng</th>
                 <th className="px-4 py-2.5">Ghi chú</th>
+                <th className="px-4 py-2.5"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border" style={{ fontSize: "12.5px" }}>
-              {filtered.map((r) => {
+            <tbody className="divide-y divide-border" style={{ fontSize: "13px" }}>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={11} className="px-4 py-10 text-center text-muted-foreground" style={{ fontSize: "13px" }}>
+                    Không có phiên đồng bộ nào
+                  </td>
+                </tr>
+              ) : filtered.map((r) => {
                 const srcMeta = SOURCE_META[r.source];
                 const stMeta = STATUS_META[r.status];
                 return (
@@ -188,15 +225,32 @@ export function NationalDataSync() {
                         color: stMeta.color, backgroundColor: stMeta.color + "15",
                       }}>
                         {r.status === "running" && <RefreshCw className="w-3 h-3 animate-spin" />}
-                        {r.status === "done" && <CheckCircle2 className="w-3 h-3" />}
-                        {r.status === "error" && <AlertTriangle className="w-3 h-3" />}
-                        {r.status === "queued" && <Clock className="w-3 h-3" />}
+                        {r.status === "done"    && <CheckCircle2 className="w-3 h-3" />}
+                        {r.status === "error"   && <AlertTriangle className="w-3 h-3" />}
+                        {r.status === "queued"  && <Clock className="w-3 h-3" />}
                         {stMeta.label}
                       </span>
                     </td>
                     <td className="px-4 py-3"><DataQualityBadge quality4D={r.quality4D} size="xs" /></td>
                     <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: "11px" }}>{formatDateTime(r.startedAt)}</td>
+                    <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: "11px" }}>{formatDuration(r.startedAt, r.finishedAt)}</td>
                     <td className="px-4 py-3 text-muted-foreground" style={{ fontSize: "11.5px" }}>{r.note || "—"}</td>
+                    <td className="px-4 py-3">
+                      {r.status === "error" && (
+                        <button onClick={() => toast.success(`Đã khởi động lại phiên ${r.id}`)}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded text-white"
+                          style={{ fontSize: "10.5px", fontWeight: 600, backgroundColor: "#dc2626" }}>
+                          <RotateCcw className="w-3 h-3" /> Retry
+                        </button>
+                      )}
+                      {r.status === "running" && (
+                        <button onClick={() => toast.info(`Đã dừng phiên ${r.id}`)}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded text-white"
+                          style={{ fontSize: "10.5px", fontWeight: 600, backgroundColor: "#64748b" }}>
+                          <StopCircle className="w-3 h-3" /> Stop
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 );
               })}
@@ -212,9 +266,9 @@ export function NationalDataSync() {
             Nguyên tắc chất lượng dữ liệu "Đúng – Đủ – Sạch – Sống"
           </p>
           <p className="text-muted-foreground mt-1" style={{ fontSize: "12px", lineHeight: 1.6 }}>
-            <strong>Đúng:</strong> đúng chuẩn định danh, đúng quy ước. {" "}
-            <strong>Đủ:</strong> đủ trường dữ liệu bắt buộc. {" "}
-            <strong>Sạch:</strong> loại trùng lặp, sai định dạng. {" "}
+            <strong>Đúng:</strong> đúng chuẩn định danh, đúng quy ước.{" "}
+            <strong>Đủ:</strong> đủ trường dữ liệu bắt buộc.{" "}
+            <strong>Sạch:</strong> loại trùng lặp, sai định dạng.{" "}
             <strong>Sống:</strong> được cập nhật thường xuyên theo chu kỳ quy định.
           </p>
         </div>

@@ -1,11 +1,12 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Link, useParams } from "react-router";
 import {
   GraduationCap, Mail, Phone, Award, BookOpen, Calendar, BarChart3,
   ArrowLeft, Star, TrendingUp, CheckCircle2, FileText, Target, Layers,
   ChevronRight,
 } from "lucide-react";
-import { scheduleEntries, tenantsByType } from "../../mock-data/index";
+import { tenantsByType } from "../../mock-data/index";
+import { getStoredEntries } from "../../../lib/schedule-store";
 import type { StemProgram } from "../../mock-data/index";
 import { useAuth } from "../../AuthContext";
 import { PageHeader } from "../ui/PageHeader";
@@ -68,7 +69,7 @@ interface StudentDetail {
 
 const AVATAR_COLORS = [
   "linear-gradient(145deg, #16a34a, #166534)",
-  "linear-gradient(145deg, #2563eb, #1e40af)",
+  "linear-gradient(145deg, #990803, #7a0602)",
   "linear-gradient(145deg, #7c3aed, #5b21b6)",
   "linear-gradient(145deg, #0891b2, #0e7490)",
   "linear-gradient(145deg, #dc2626, #b91c1c)",
@@ -159,7 +160,7 @@ export function StudentProfile() {
           </p>
           <Link
             to="/school/students"
-            className="inline-flex items-center gap-1.5 mt-4 px-4 py-2 bg-[#2563eb] text-white rounded-lg"
+            className="inline-flex items-center gap-1.5 mt-4 px-4 py-2 bg-[#990803] text-white rounded-lg"
             style={{ fontSize: "13px" }}
           >
             <ArrowLeft className="w-4 h-4" />
@@ -172,8 +173,8 @@ export function StudentProfile() {
 
   // Filter schedule entries matching student's class pattern
   const classPattern = student.className.replace("Lớp ", "");
-  const studentSchedule = scheduleEntries.filter(
-    (s) => s.schoolId === tenantId && s.className.includes(classPattern)
+  const studentSchedule = getStoredEntries(tenantId).filter(
+    (s) => s.className.includes(classPattern)
   ).slice(0, 10);
 
   return (
@@ -196,7 +197,7 @@ export function StudentProfile() {
         icon={GraduationCap}
         title="Hồ sơ Học sinh"
         subtitle={`${student.name} · ${student.className}`}
-        accentColor="#2563eb"
+        accentColor="#990803"
         actions={
           <button
             onClick={() => toast.info(`Xuất hồ sơ học sinh ${student.name}`)}
@@ -228,7 +229,7 @@ export function StudentProfile() {
             <div className="flex flex-wrap items-center gap-3 mt-2.5">
               <span className="inline-flex items-center gap-1 text-muted-foreground" style={{ fontSize: "12.5px" }}>
                 <Phone className="w-3.5 h-3.5 text-[#2563eb]" />
-                Phụ huynh: <a href={`tel:${student.parentPhone}`} className="hover:text-[#2563eb] font-medium">{student.parentPhone}</a>
+                Phụ huynh: <a href={`tel:${student.parentPhone}`} className="hover:text-[#990803] font-medium">{student.parentPhone}</a>
               </span>
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary text-muted-foreground" style={{ fontSize: "11px", fontWeight: 600 }}>
                 Mã: {student.id}
@@ -282,7 +283,7 @@ export function StudentProfile() {
                 <dt className="text-xs text-muted-foreground">Phụ huynh</dt>
                 <dd className="text-sm font-semibold text-foreground flex items-center gap-2 mt-0.5">
                   {student.parentName}
-                  <a href={`tel:${student.parentPhone}`} className="text-muted-foreground hover:text-[#2563eb] flex items-center gap-1" style={{ fontSize: "12px", fontWeight: 400 }}>
+                  <a href={`tel:${student.parentPhone}`} className="text-muted-foreground hover:text-[#990803] flex items-center gap-1" style={{ fontSize: "12px", fontWeight: 400 }}>
                     <Phone className="w-3 h-3" />
                     {student.parentPhone}
                   </a>
@@ -423,14 +424,22 @@ export function StudentProfile() {
           {/* Quick actions */}
           <div className="bg-card border border-border rounded-xl p-5 space-y-2">
             <h2 className="text-foreground mb-3" style={{ fontSize: "14px", fontWeight: 700 }}>Thao tác nhanh</h2>
-            <button
-              onClick={() => toast.info(`Xem thời khóa biểu của ${student.name}`)}
+            <Link
+              to={`/school/schedule?class=${encodeURIComponent(classPattern)}`}
               className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg border border-border hover:bg-secondary text-left"
               style={{ fontSize: "13px" }}
             >
               <Calendar className="w-4 h-4 text-[#2563eb]" />
               Xem TKB
-            </button>
+            </Link>
+            <Link
+              to="/school/license-assign"
+              className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg border border-border hover:bg-secondary text-left"
+              style={{ fontSize: "13px" }}
+            >
+              <Layers className="w-4 h-4 text-[#16a34a]" />
+              Gán license
+            </Link>
             <button
               onClick={() => toast.info(`Đang xuất hồ sơ học sinh ${student.name}...`)}
               className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg border border-border hover:bg-secondary text-left"
@@ -441,7 +450,7 @@ export function StudentProfile() {
             </button>
             <button
               onClick={() => toast.info(`Nhắn tin đến phụ huynh của ${student.name}`)}
-              className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg bg-[#2563eb] text-white hover:opacity-90"
+              className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg bg-[#990803] text-white hover:opacity-90"
               style={{ fontSize: "13px" }}
             >
               <Mail className="w-4 h-4" />

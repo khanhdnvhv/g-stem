@@ -1,10 +1,11 @@
-import { useState, type FormEvent } from "react";
+﻿import { useState, type FormEvent } from "react";
 import { Link } from "react-router";
 import {
   Calendar, Clock, Users, Layers, CheckCircle, AlertCircle, ArrowLeft, Plus,
 } from "lucide-react";
 import { stemRooms, roomBookings, type STEMRoom, type RoomBooking } from "../../mock-data/index";
 import { tenantsByType } from "../../mock-data/index";
+import { getStoredEntries } from "../../../lib/schedule-store";
 import { useAuth } from "../../AuthContext";
 import { PageHeader } from "../ui/PageHeader";
 import { toast } from "@/app/lib/toast";
@@ -74,7 +75,7 @@ function generateBookingRef(): string {
 
 export function RoomBooking() {
   const { user } = useAuth();
-  const _tenantId = user?.tenantType === "school" ? user.tenantId : tenantsByType.school[0].id;
+  const tenantId = user?.tenantType === "school" ? user.tenantId : tenantsByType.school[0].id;
 
   const [submitted, setSubmitted] = useState(false);
   const [bookingRef] = useState(generateBookingRef);
@@ -92,17 +93,29 @@ export function RoomBooking() {
   // Schedule view
   const [scheduleDate, setScheduleDate] = useState(TODAY);
 
-  // Conflict detection
+  // Conflict detection: check static bookings + localStorage schedule entries
+  const selectedWeekday = (() => {
+    const d = new Date(selectedDate).getDay(); // 0=Sun,1=Mon,...
+    return d >= 1 && d <= 5 ? d : 0;
+  })();
   const hasConflict =
     selectedRoom !== "" &&
     selectedDate !== "" &&
     formPeriod !== "" &&
-    roomBookings.some(
-      (b) =>
-        b.roomId === selectedRoom &&
-        b.date === selectedDate &&
-        b.period === Number(formPeriod) &&
-        b.status !== "cancelled"
+    (
+      roomBookings.some(
+        (b) =>
+          b.roomId === selectedRoom &&
+          b.date === selectedDate &&
+          b.period === Number(formPeriod) &&
+          b.status !== "cancelled"
+      ) ||
+      getStoredEntries(tenantId).some(
+        (e) =>
+          e.roomId === selectedRoom &&
+          e.period === Number(formPeriod) &&
+          e.weekday === selectedWeekday
+      )
     );
 
   // BR-03: period must match CT type
@@ -138,7 +151,7 @@ export function RoomBooking() {
   const scheduleGrid = buildScheduleGrid(scheduleDate);
 
   const inputClass =
-    "w-full px-3 py-2.5 bg-card border border-border rounded-lg outline-none focus:border-[#2563eb] text-foreground transition-colors";
+    "w-full px-3 py-2.5 bg-card border border-border rounded-lg outline-none focus:border-[#990803] text-foreground transition-colors";
   const inputStyle = { fontSize: "13px" };
   const labelClass = "block text-foreground mb-1";
   const labelStyle = { fontSize: "12px", fontWeight: 600 };
@@ -150,7 +163,7 @@ export function RoomBooking() {
         icon={Calendar}
         title="Đặt Phòng STEM"
         subtitle="Đặt lịch sử dụng phòng STEM cho tiết học."
-        accentColor="#2563eb"
+        accentColor="#990803"
         actions={
           <Link
             to="/school/rooms"
@@ -220,7 +233,7 @@ export function RoomBooking() {
               </div>
               <button
                 onClick={() => setSubmitted(false)}
-                className="mt-5 flex items-center gap-1.5 px-4 py-2 bg-[#2563eb] text-white rounded-lg hover:opacity-90 mx-auto"
+                className="mt-5 flex items-center gap-1.5 px-4 py-2 bg-[#990803] text-white rounded-lg hover:opacity-90 mx-auto"
                 style={{ fontSize: "13px", fontWeight: 500 }}
               >
                 <Plus className="w-4 h-4" />
@@ -428,7 +441,7 @@ export function RoomBooking() {
                       className={`flex items-center gap-1.5 px-5 py-2.5 rounded-lg transition-opacity ${
                         hasConflict || hasPeriodViolation
                           ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                          : "bg-[#2563eb] text-white hover:opacity-90"
+                          : "bg-[#990803] text-white hover:opacity-90"
                       }`}
                       style={{ fontSize: "13px", fontWeight: 600 }}
                     >
@@ -518,7 +531,7 @@ export function RoomBooking() {
                     onClick={() => setScheduleDate(date)}
                     className={`flex flex-col items-center px-3.5 py-2 rounded-lg border transition-colors ${
                       isSelected
-                        ? "bg-[#2563eb] text-white border-[#2563eb]"
+                        ? "bg-[#990803] text-white border-[#990803]"
                         : isToday
                         ? "border-[#2563eb] text-[#2563eb] bg-[#2563eb10]"
                         : "bg-card border-border hover:bg-secondary text-foreground"

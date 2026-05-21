@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import {
   FileText, Settings2, Download, Eye, Calendar, Layers, Users,
   BarChart3, CheckCircle2, Plus, X, ChevronDown, Table2,
@@ -164,9 +164,9 @@ export function ReportBuilder() {
     <div className="space-y-5">
       <PageHeader
         icon={FileText}
-        title="Report Builder"
+        title="Trình tạo báo cáo"
         subtitle="Tự tạo báo cáo tùy chỉnh theo nhu cầu của trường."
-        accentColor="#2563eb"
+        accentColor="#990803"
       />
 
       {/* Step indicator */}
@@ -447,7 +447,7 @@ export function ReportBuilder() {
                 Tải xuống Excel
               </button>
               <button
-                onClick={() => toast.info("Đang xuất PDF...")}
+                onClick={() => window.print()}
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border text-sm font-medium hover:bg-muted transition-colors"
               >
                 <FileText className="w-4 h-4" />

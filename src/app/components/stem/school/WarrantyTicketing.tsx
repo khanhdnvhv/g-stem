@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+﻿import { useState, useMemo } from "react";
 import {
   Wrench, Plus, Camera, Search, Eye, Clock, X, Upload,
   CheckCircle2, AlertTriangle,
@@ -82,7 +82,7 @@ function CreateTicketDialog({
               ))}
               <button
                 onClick={() => setPhotos([...photos, `photo-${photos.length + 1}.jpg`])}
-                className="w-20 h-20 rounded border-2 border-dashed border-border hover:border-[#2563eb] flex flex-col items-center justify-center text-muted-foreground gap-1"
+                className="w-20 h-20 rounded border-2 border-dashed border-border hover:border-[#990803] flex flex-col items-center justify-center text-muted-foreground gap-1"
               >
                 <Upload className="w-5 h-5" />
                 <span style={{ fontSize: "10px" }}>Thêm ảnh</span>
@@ -157,7 +157,7 @@ export function WarrantyTicketing() {
         icon={Wrench}
         title="Yêu cầu Bảo hành"
         subtitle="Ghi nhận sự cố, hỏng hóc hoặc mất mát thiết bị và gửi yêu cầu bảo hành lên hệ thống NCC."
-        accentColor="#2563eb"
+        accentColor="#990803"
         actions={
           <button
             onClick={() => setCreateOpen(true)}
@@ -188,7 +188,7 @@ export function WarrantyTicketing() {
           />
         </div>
         <button onClick={() => setStatusFilter("all")}
-          className={`px-3 py-2 rounded-lg border ${statusFilter === "all" ? "bg-[#2563eb] text-white border-[#2563eb]" : "bg-card border-border hover:bg-secondary"}`}
+          className={`px-3 py-2 rounded-lg border ${statusFilter === "all" ? "bg-[#990803] text-white border-[#990803]" : "bg-card border-border hover:bg-secondary"}`}
           style={{ fontSize: "12px", fontWeight: 500 }}>
           Tất cả
         </button>

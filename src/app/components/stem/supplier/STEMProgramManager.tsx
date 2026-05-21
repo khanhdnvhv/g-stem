@@ -1,14 +1,25 @@
+import { toast } from "@/app/lib/toast";
+import {
+    BarChart3,
+    BookOpen,
+    CheckCircle2,
+    ChevronRight,
+    Clock,
+    Eye,
+    GraduationCap,
+    Info,
+    Lock,
+    Pencil,
+    Plus,
+    Puzzle,
+    Save, X,
+} from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
-import {
-  Puzzle, Plus, BookOpen, GraduationCap, Eye, Pencil, Info,
-  Save, X, CheckCircle2, Clock, Lock, ChevronRight, BarChart3,
-} from "lucide-react";
-import { STEM_PROGRAMS, STEM_PROGRAM_LIST, lessons } from "../../mock-data/index";
 import type { StemProgram } from "../../mock-data/index";
+import { STEM_PROGRAMS, STEM_PROGRAM_LIST, lessons } from "../../mock-data/index";
 import { PageHeader } from "../ui/PageHeader";
 import { ProgramBadge } from "../ui/badges";
-import { toast } from "@/app/lib/toast";
 import { CTSelectorWizard } from "./CTSelectorWizard";
 
 /* ================================================================ */
@@ -27,7 +38,7 @@ interface NccPackage {
 const GRADE_LEVELS: readonly string[] = ["Mầm non", "Tiểu học", "THCS", "THPT"];
 
 const MATERIAL_TYPES = [
-  { key: "khtc",  label: "Kế hoạch tổ chức" },
+  { key: "khtc",  label: "Kế hoạch giáo dục" },
   { key: "tlbd",  label: "Tài liệu bồi dưỡng GV" },
   { key: "khbd",  label: "Kế hoạch bài dạy" },
   { key: "pptx",  label: "Bài giảng PPTX/Slides" },

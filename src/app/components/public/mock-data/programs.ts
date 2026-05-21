@@ -19,7 +19,7 @@ export const stemPrograms: ProgramInfo[] = [
       "Hóa 10: Thí nghiệm phản ứng hóa học",
     ],
     materialTypes: [
-      "Kế hoạch tổ chức",
+      "Kế hoạch giáo dục",
       "Tài liệu bồi dưỡng GV",
       "Kế hoạch bài dạy",
       "Bài giảng PPTX",

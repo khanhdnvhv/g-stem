@@ -3,21 +3,26 @@ import {
   BookOpen, Search, PlayCircle, CheckCircle2, Clock,
   Filter, Bookmark,
 } from "lucide-react";
+import { useGradeLevel } from "../../GradeLevelContext";
+import { MamNonLessons } from "./MamNonLessons";
 import { lessons, STEM_PROGRAMS } from "../../mock-data/index";
 import type { StemProgram } from "../../mock-data/index";
 import { PageHeader } from "../ui/PageHeader";
 import { ProgramBadge } from "../ui/badges";
 import { KpiCard } from "../ui/KpiCard";
-import { toast } from "@/app/lib/toast";
+import { toast } from "sonner";
 
 /* ================================================================ */
 /*  STUDENT LESSON PLAYER — danh sách bài + player modal            */
 /* ================================================================ */
 
 export function StudentLessonPlayer() {
+  const { level } = useGradeLevel();
   const [search, setSearch] = useState("");
   const [programFilter, setProgramFilter] = useState<StemProgram | "all">("all");
   const [playingLesson, setPlayingLesson] = useState<string | null>(null);
+
+  if (level === "mamnon") return <MamNonLessons />;
 
   // Mock: học sinh đã hoàn tất 5 bài đầu
   const completedIds = new Set(lessons.slice(0, 5).map((l) => l.id));
@@ -38,14 +43,14 @@ export function StudentLessonPlayer() {
         icon={BookOpen}
         title="Bài giảng STEM"
         subtitle="Truy cập và học các bài giảng STEM đã được phân bổ. Tương tác, làm bài tập và theo dõi tiến độ."
-        accentColor="#2563eb"
+        accentColor="#990803"
       />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <KpiCard icon={BookOpen} label="Tổng bài giảng" value={lessons.length} color="#2563eb" />
+        <KpiCard icon={BookOpen} label="Tổng bài giảng" value={lessons.length} color="#990803" />
         <KpiCard icon={CheckCircle2} label="Đã hoàn thành" value={completedIds.size} color="#16a34a" />
         <KpiCard icon={Bookmark} label="Đã bookmark" value={bookmarkedIds.size} color="#c8a84e" />
-        <KpiCard icon={Clock} label="Tổng thời lượng" value={`${lessons.reduce((s, l) => s + l.durationMinutes, 0)}p`} color="#7c3aed" />
+        <KpiCard icon={Clock} label="Tổng thời lượng" value={`${lessons.reduce((s, l) => s + l.durationMinutes, 0)}p`} color="#990803" />
       </div>
 
       <div className="flex items-center gap-2 flex-wrap">
@@ -57,7 +62,7 @@ export function StudentLessonPlayer() {
             style={{ fontSize: "13px" }} />
         </div>
         <button onClick={() => setProgramFilter("all")}
-          className={`px-3 py-2 rounded-lg border ${programFilter === "all" ? "bg-[#2563eb] text-white border-[#2563eb]" : "bg-card border-border hover:bg-secondary"}`}
+          className={`px-3 py-2 rounded-lg border ${programFilter === "all" ? "bg-[#990803] text-white border-[#990803]" : "bg-card border-border hover:bg-secondary"}`}
           style={{ fontSize: "12px", fontWeight: 500 }}>
           Tất cả
         </button>
@@ -123,7 +128,7 @@ export function StudentLessonPlayer() {
                   className="mt-3 w-full px-3 py-2 rounded-lg flex items-center justify-center gap-1.5"
                   style={{
                     fontSize: "12px", fontWeight: 500,
-                    backgroundColor: done ? "#16a34a15" : "#2563eb",
+                    backgroundColor: done ? "#16a34a15" : "#990803",
                     color: done ? "#16a34a" : "white",
                   }}
                 >
@@ -150,7 +155,7 @@ export function StudentLessonPlayer() {
                     onClick={() => toast.info("Bài giảng sẽ phát video thật khi tích hợp backend")}
                     className="w-20 h-20 bg-white/90 rounded-full flex items-center justify-center hover:scale-110 transition-transform"
                   >
-                    <PlayCircle className="w-12 h-12 text-[#2563eb]" />
+                    <PlayCircle className="w-12 h-12 text-[#990803]" />
                   </button>
                 </div>
               </div>
@@ -166,7 +171,7 @@ export function StudentLessonPlayer() {
                   {lesson.description}
                 </p>
                 {lesson.sgkMapping && (
-                  <p className="mt-2 text-[#2563eb]" style={{ fontSize: "12px" }}>
+                  <p className="mt-2 text-[#990803]" style={{ fontSize: "12px" }}>
                     📖 {lesson.sgkMapping}
                   </p>
                 )}

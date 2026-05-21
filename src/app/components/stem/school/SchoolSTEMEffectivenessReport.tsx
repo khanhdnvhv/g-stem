@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+﻿import { useMemo } from "react";
 import {
   BarChart3, Download, TrendingUp, GraduationCap, Users, Award,
 } from "lucide-react";
@@ -68,10 +68,10 @@ export function SchoolSTEMEffectivenessReport() {
         icon={BarChart3}
         title="Báo cáo Hiệu quả STEM"
         subtitle="Theo dõi kết quả học tập, điểm thi STEM của HS và hiệu quả triển khai tại trường."
-        accentColor="#2563eb"
+        accentColor="#990803"
         actions={
           <button onClick={() => toast.info("Xuất báo cáo theo chuẩn Thông tư Bộ GD&ĐT")}
-            className="flex items-center gap-1.5 px-3 py-2 bg-[#2563eb] text-white rounded-lg hover:opacity-90"
+            className="flex items-center gap-1.5 px-3 py-2 bg-[#990803] text-white rounded-lg hover:opacity-90"
             style={{ fontSize: "13px", fontWeight: 500 }}>
             <Download className="w-4 h-4" /> Xuất báo cáo
           </button>

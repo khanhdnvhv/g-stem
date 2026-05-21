@@ -1,14 +1,15 @@
-import { useState, useMemo } from "react";
-import { Link } from "react-router";
+﻿import { useState, useMemo } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import {
   Calendar, Download, Info, RefreshCw, AlertTriangle,
   CheckCircle2, ChevronDown, Layers, Clock,
 } from "lucide-react";
 import {
-  scheduleEntries, tenantsByType, STEM_PROGRAMS,
+  tenantsByType, STEM_PROGRAMS,
   basePeriodsBySchool, PERIOD_TIMES, MORNING_PERIODS, AFTERNOON_PERIODS,
   type STEMScheduleEntry, type StemProgram, type BasePeriod,
 } from "../../mock-data/index";
+import { getStoredEntries } from "../../../lib/schedule-store";
 import { useAuth } from "../../AuthContext";
 import { PageHeader } from "../ui/PageHeader";
 import { KpiCard } from "../ui/KpiCard";
@@ -31,9 +32,11 @@ type LayerMode = "all" | "base" | "stem";
 export function STEMSchedulePlanner() {
   const { user } = useAuth();
   const tenantId = user?.tenantType === "school" ? user.tenantId : tenantsByType.school[0].id;
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const stemEntries = useMemo(
-    () => scheduleEntries.filter((e) => e.schoolId === tenantId && e.programCode !== "CT5"),
+    () => getStoredEntries(tenantId).filter((e) => e.programCode !== "CT5"),
     [tenantId],
   );
   const baseEntries = useMemo(
@@ -41,7 +44,7 @@ export function STEMSchedulePlanner() {
     [tenantId],
   );
 
-  const [classFilter, setClassFilter] = useState<string>("all");
+  const [classFilter, setClassFilter] = useState<string>(searchParams.get("class") ?? "all");
   const [layerMode, setLayerMode] = useState<LayerMode>("all");
   const [showLegend, setShowLegend] = useState(false);
 
@@ -94,7 +97,7 @@ export function STEMSchedulePlanner() {
   const totalStemPeriods = filteredStem.length;
   const conflictCount = conflictSet.size;
   const classesCoveredCount = new Set(filteredStem.map((e) => e.className)).size;
-  const ct5Count = scheduleEntries.filter((e) => e.schoolId === tenantId && e.programCode === "CT5").length;
+  const ct5Count = getStoredEntries(tenantId).filter((e) => e.programCode === "CT5").length;
 
   /* ── Program distribution (exclude CT5) ─────────────────────── */
   const byProgram: Partial<Record<StemProgram, number>> = {};
@@ -106,7 +109,7 @@ export function STEMSchedulePlanner() {
         icon={Calendar}
         title="Thời khóa biểu Toàn trường"
         subtitle="TKB nền K12Online + lớp tiết STEM gắn phía trên. CT5 quản lý qua Booking phòng."
-        accentColor="#2563eb"
+        accentColor="#990803"
         actions={
           <>
             <button
@@ -117,12 +120,19 @@ export function STEMSchedulePlanner() {
               <RefreshCw className="w-4 h-4" /> Đồng bộ K12
             </button>
             <button
-              onClick={() => toast.info("Xuất thời khóa biểu PDF toàn trường")}
-              className="flex items-center gap-1.5 px-3 py-2 bg-[#2563eb] text-white rounded-lg hover:opacity-90"
+              onClick={() => window.print()}
+              className="flex items-center gap-1.5 px-3 py-2 border border-border bg-card rounded-lg hover:bg-secondary"
               style={{ fontSize: "13px", fontWeight: 500 }}
             >
               <Download className="w-4 h-4" /> Xuất PDF
             </button>
+            <Link
+              to="/school/stem-slots"
+              className="flex items-center gap-1.5 px-3 py-2 bg-[#990803] text-white rounded-lg hover:opacity-90"
+              style={{ fontSize: "13px", fontWeight: 500, textDecoration: "none" }}
+            >
+              <Layers className="w-4 h-4" /> Xếp tiết STEM
+            </Link>
           </>
         }
       />
@@ -176,7 +186,7 @@ export function STEMSchedulePlanner() {
               style={{
                 fontSize: "12px",
                 fontWeight: layerMode === m ? 700 : 500,
-                background: layerMode === m ? "#2563eb" : undefined,
+                background: layerMode === m ? "#990803" : undefined,
                 color: layerMode === m ? "#fff" : undefined,
               }}
             >
@@ -292,7 +302,7 @@ export function STEMSchedulePlanner() {
                         const baseCells = (layerMode === "stem") ? [] : (baseGrid[wd]?.[p] ?? []);
 
                         return (
-                          <td key={wd} className="px-1 py-1 align-top">
+                          <td key={wd} className="px-1 py-1 align-top cursor-pointer" onClick={() => navigate(`/school/stem-slots?weekday=${wd}&period=${p}`)}>
                             <div className="space-y-0.5">
                               {/* Base TKB entries (gray) */}
                               {baseCells.map((bp) => {
@@ -329,7 +339,7 @@ export function STEMSchedulePlanner() {
                                 return (
                                   <div
                                     key={se.id}
-                                    onClick={() => toast.info(`${se.className} · ${se.subject} · ${se.teacherName} · ${se.roomName}`)}
+                                    onClick={(ev) => { ev.stopPropagation(); navigate(`/school/stem-slots?weekday=${wd}&period=${p}`); }}
                                     className={`px-1.5 py-1 rounded cursor-pointer hover:opacity-80 transition-opacity ${
                                       isConflict ? "ring-2 ring-red-400" : ""
                                     }`}

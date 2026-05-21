@@ -1,6 +1,6 @@
 import {
   Award, Download, Eye, CheckCircle2, Calendar,
-  Lock, Sparkles, Share2, AlertCircle,
+  Lock, Sparkles, Share2,
 } from "lucide-react";
 import { STEM_PROGRAMS } from "../../mock-data/index";
 import type { StemProgram } from "../../mock-data/index";
@@ -8,7 +8,7 @@ import { PageHeader } from "../ui/PageHeader";
 import { ProgramBadge } from "../ui/badges";
 import { KpiCard } from "../ui/KpiCard";
 import { formatDate } from "../ui/format";
-import { toast } from "@/app/lib/toast";
+import { toast } from "sonner";
 
 /* ================================================================ */
 /*  STUDENT CERTIFICATES — chứng chỉ STEM cá nhân                   */
@@ -22,26 +22,27 @@ interface Cert {
   issuedAt: string;
   issuer: string;
   earned: boolean;
+  certNo?: string;
   progress?: number;
 }
 
 const CERTS: Cert[] = [
-  { id: "C1", title: "Hoàn thành CT1 — Tích hợp cơ bản", program: "CT1", level: "Basic",
-    issuedAt: "2025-12-15", issuer: "Geleximco STEM", earned: true },
-  { id: "C2", title: "Hoàn thành CT2 — Liên môn Toán-Lý", program: "CT2", level: "Intermediate",
-    issuedAt: "2026-02-10", issuer: "Geleximco STEM", earned: true },
-  { id: "C3", title: "Hoàn thành Robotic Cơ bản (CT4)", program: "CT4", level: "Basic",
-    issuedAt: "", issuer: "Geleximco STEM", earned: false, progress: 75 },
-  { id: "C4", title: "Hoàn thành AI for Kids (CT4)", program: "CT4", level: "Intermediate",
+  { id: "C1", title: "Chứng chỉ STEM CT1 — Tích hợp cơ bản", program: "CT1", level: "Basic",
+    issuedAt: "2025-12-15", issuer: "Geleximco STEM", earned: true, certNo: "GLX-STEM-CT1-00123" },
+  { id: "C2", title: "Chứng chỉ STEM CT2 — Liên môn Toán-Lý", program: "CT2", level: "Intermediate",
+    issuedAt: "2026-02-10", issuer: "Geleximco STEM", earned: true, certNo: "GLX-STEM-CT2-00098" },
+  { id: "C3", title: "Chứng chỉ Robotic Cơ bản", program: "CT4", level: "Basic",
+    issuedAt: "", issuer: "Geleximco STEM + IEEE VN", earned: false, progress: 75 },
+  { id: "C4", title: "Chứng chỉ AI for Kids", program: "CT4", level: "Intermediate",
     issuedAt: "", issuer: "Geleximco STEM", earned: false, progress: 40 },
-  { id: "C5", title: "Đề tài NCKH — CT5", program: "CT5", level: "Advanced",
-    issuedAt: "", issuer: "Geleximco STEM", earned: false, progress: 0 },
+  { id: "C5", title: "Chứng chỉ Đề tài NCKH Đầu tiên", program: "CT5", level: "Advanced",
+    issuedAt: "", issuer: "Sở GD&ĐT Hà Nội", earned: false, progress: 0 },
 ];
 
 const LEVEL_COLOR: Record<Cert["level"], string> = {
   Basic: "#64748b",
-  Intermediate: "#0891b2",
-  Advanced: "#7c3aed",
+  Intermediate: "#2563eb",
+  Advanced: "#990803",
   Expert: "#c8a84e",
 };
 
@@ -58,18 +59,9 @@ export function StudentCertificates() {
         accentColor="#c8a84e"
       />
 
-      {/* Disclaimer banner */}
-      <div className="flex items-start gap-2.5 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 rounded-lg">
-        <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-        <p className="text-amber-800 dark:text-amber-300" style={{ fontSize: "12px" }}>
-          <strong>Chứng nhận nội bộ — Không có giá trị pháp lý (V1).</strong>{" "}
-          Đây là bằng chứng hoàn thành chương trình STEM của nhà trường, không phải chứng chỉ Nhà nước hay văn bằng pháp lý.
-        </p>
-      </div>
-
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <KpiCard icon={Award} label="Đã đạt" value={earned.length} color="#16a34a" />
-        <KpiCard icon={Sparkles} label="Đang học" value={inProgress.filter((c) => (c.progress || 0) > 0).length} color="#7c3aed" />
+        <KpiCard icon={Sparkles} label="Đang học" value={inProgress.filter((c) => (c.progress || 0) > 0).length} color="#990803" />
         <KpiCard icon={Lock} label="Chưa mở" value={inProgress.filter((c) => (c.progress || 0) === 0).length} color="#64748b" />
         <KpiCard icon={CheckCircle2} label="Tổng chứng chỉ" value={CERTS.length} color="#c8a84e" />
       </div>
@@ -90,7 +82,7 @@ export function StudentCertificates() {
                       <Award className="w-7 h-7 text-[#c8a84e]" />
                     </div>
                     <span className="px-2 py-0.5 bg-[#16a34a] text-white rounded inline-flex items-center gap-1" style={{ fontSize: "10px", fontWeight: 600 }}>
-                      <CheckCircle2 className="w-3 h-3" /> Đã hoàn thành
+                      <CheckCircle2 className="w-3 h-3" /> Đã xác thực
                     </span>
                   </div>
                   <h3 className="text-foreground" style={{ fontSize: "14px", fontWeight: 700 }}>{c.title}</h3>
@@ -121,6 +113,12 @@ export function StudentCertificates() {
                       {formatDate(c.issuedAt)}
                     </p>
                   </div>
+                  {c.certNo && (
+                    <div>
+                      <p className="text-muted-foreground" style={{ fontSize: "10.5px" }}>Mã chứng chỉ</p>
+                      <p className="font-mono" style={{ fontSize: "11px" }}>{c.certNo}</p>
+                    </div>
+                  )}
                   <div className="flex gap-2 pt-2">
                     <button onClick={() => toast.info(`Xem chứng chỉ ${c.title}`)}
                       className="flex-1 px-3 py-1.5 border border-border rounded hover:bg-secondary flex items-center justify-center gap-1"
@@ -147,7 +145,7 @@ export function StudentCertificates() {
       {/* In progress / locked */}
       <div>
         <h2 className="text-foreground mb-3" style={{ fontSize: "15px", fontWeight: 700 }}>
-          <Sparkles className="w-4 h-4 inline mr-1.5 text-[#7c3aed]" />
+          <Sparkles className="w-4 h-4 inline mr-1.5 text-[#990803]" />
           Đang chinh phục ({inProgress.length})
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -155,7 +153,7 @@ export function StudentCertificates() {
             <div key={c.id} className={`bg-card rounded-xl border border-border p-4 ${c.progress === 0 ? "opacity-70" : ""}`}>
               <div className="flex items-start justify-between mb-2">
                 <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
-                  {c.progress === 0 ? <Lock className="w-5 h-5 text-muted-foreground" /> : <Award className="w-5 h-5 text-[#7c3aed]" />}
+                  {c.progress === 0 ? <Lock className="w-5 h-5 text-muted-foreground" /> : <Award className="w-5 h-5 text-[#990803]" />}
                 </div>
                 <ProgramBadge code={c.program} size="xs" />
               </div>
@@ -168,7 +166,7 @@ export function StudentCertificates() {
                     <span style={{ fontSize: "10.5px", fontWeight: 600 }}>{c.progress}%</span>
                   </div>
                   <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
-                    <div className="h-full bg-[#7c3aed]" style={{ width: `${c.progress}%` }} />
+                    <div className="h-full bg-[#990803]" style={{ width: `${c.progress}%` }} />
                   </div>
                 </div>
               )}

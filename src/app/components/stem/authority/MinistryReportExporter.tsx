@@ -3,11 +3,9 @@ import {
   FileText, Download, Calendar, Filter, CheckCircle2,
   History, FileType,
 } from "lucide-react";
-import { MINISTRY_REPORT_TEMPLATES, authorityReports } from "../../mock-data/index";
-import { PageHeader } from "../ui/PageHeader";
-import { KpiCard } from "../ui/KpiCard";
-import { formatDateTime, formatRelative } from "../ui/format";
-import { toast } from "@/app/lib/toast";
+import { SelectDown, PageHeader, KpiCard, formatDateTime, formatRelative } from "./authority-ui";
+import { MINISTRY_REPORT_TEMPLATES, authorityReports } from "./authority-data";
+import { toast } from "sonner";
 
 /* ================================================================ */
 /*  MINISTRY REPORT EXPORTER — Kết xuất báo cáo theo Thông tư        */
@@ -81,19 +79,21 @@ export function MinistryReportExporter() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-muted-foreground" style={{ fontSize: "11.5px", fontWeight: 600 }}>PHẠM VI</label>
-                <select value={scope} onChange={(e) => setScope(e.target.value as typeof SCOPES[number])}
-                  className="w-full mt-1 px-3 py-2 bg-input-background border border-border rounded-lg outline-none"
-                  style={{ fontSize: "13px" }}>
-                  {SCOPES.map((s) => <option key={s} value={s}>{SCOPE_LABEL[s]}</option>)}
-                </select>
+                <SelectDown
+                  value={scope}
+                  onChange={(v) => setScope(v as typeof SCOPES[number])}
+                  className="w-full mt-1"
+                  options={SCOPES.map(s => ({ value: s, label: SCOPE_LABEL[s] }))}
+                />
               </div>
               <div>
                 <label className="text-muted-foreground" style={{ fontSize: "11.5px", fontWeight: 600 }}>KỲ BÁO CÁO</label>
-                <select value={period} onChange={(e) => setPeriod(e.target.value)}
-                  className="w-full mt-1 px-3 py-2 bg-input-background border border-border rounded-lg outline-none"
-                  style={{ fontSize: "13px" }}>
-                  {PERIODS.map((p) => <option key={p} value={p}>{p}</option>)}
-                </select>
+                <SelectDown
+                  value={period}
+                  onChange={setPeriod}
+                  className="w-full mt-1"
+                  options={PERIODS.map(p => ({ value: p, label: p }))}
+                />
               </div>
             </div>
 

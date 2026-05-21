@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import {
   BarChart3, TrendingUp, Calendar, Layers, Clock, DollarSign,
   Target, Download, ChevronDown,
@@ -100,7 +100,7 @@ export function RoomROIReport() {
         icon={BarChart3}
         title="Thống kê Sử dụng Phòng STEM"
         subtitle="Phân tích hiệu quả khai thác và ROI đầu tư cơ sở vật chất."
-        accentColor="#2563eb"
+        accentColor="#990803"
         actions={
           <div className="flex items-center gap-2">
             <div className="flex rounded-lg border border-border overflow-hidden text-xs">

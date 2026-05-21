@@ -1,7 +1,7 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Link } from "react-router";
 import {
-  Layers, Search, Plus, Settings2, CheckCircle2,
+  Layers, Search, Settings2, CheckCircle2,
   AlertTriangle, Wrench, ChevronRight, Zap, Monitor,
 } from "lucide-react";
 import { roomsBySchool, tenantsByType, type STEMRoom } from "../../mock-data/index";
@@ -10,7 +10,6 @@ import { PageHeader } from "../ui/PageHeader";
 import { KpiCard } from "../ui/KpiCard";
 import { TierBadge, ProgramBadge } from "../ui/badges";
 import { cn } from "../ui/utils";
-import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  ROOM LIST (School) — Quản lý phòng học STEM                      */
@@ -64,26 +63,16 @@ export function RoomList() {
         icon={Layers}
         title="Phòng STEM"
         subtitle="Quản lý phòng học và thiết bị."
-        accentColor="#2563eb"
+        accentColor="#990803"
         actions={
-          <div className="flex items-center gap-2">
-            <Link
-              to="/school/rooms/booking"
-              className="flex items-center gap-1.5 px-3 py-2 border border-[#2563eb] text-[#2563eb] rounded-lg hover:bg-[#2563eb] hover:text-white transition-colors"
-              style={{ fontSize: "13px", fontWeight: 500 }}
-            >
-              <Zap className="w-4 h-4" />
-              Đặt phòng
-            </Link>
-            <button
-              onClick={() => toast.info("Tính năng thêm phòng đang phát triển")}
-              className="flex items-center gap-1.5 px-3 py-2 bg-[#2563eb] text-white rounded-lg hover:opacity-90 transition-opacity"
-              style={{ fontSize: "13px", fontWeight: 500 }}
-            >
-              <Plus className="w-4 h-4" />
-              Thêm phòng
-            </button>
-          </div>
+          <Link
+            to="/school/rooms/booking"
+            className="flex items-center gap-1.5 px-3 py-2 bg-[#990803] text-white rounded-lg hover:opacity-90 transition-opacity"
+            style={{ fontSize: "13px", fontWeight: 500 }}
+          >
+            <Zap className="w-4 h-4" />
+            Đặt phòng
+          </Link>
         }
       />
 
@@ -121,7 +110,7 @@ export function RoomList() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Tìm phòng, mã phòng..."
-            className="w-full pl-9 pr-3 py-2 bg-card border border-border rounded-lg outline-none focus:border-[#2563eb]"
+            className="w-full pl-9 pr-3 py-2 bg-card border border-border rounded-lg outline-none focus:border-[#990803]"
             style={{ fontSize: "13px" }}
           />
         </div>
@@ -133,7 +122,7 @@ export function RoomList() {
               className={cn(
                 "px-3 py-1.5 rounded-lg border transition-colors",
                 statusFilter === tab.value
-                  ? "bg-[#2563eb] text-white border-[#2563eb]"
+                  ? "bg-[#990803] text-white border-[#990803]"
                   : "bg-card border-border hover:bg-secondary text-foreground"
               )}
               style={{ fontSize: "12px", fontWeight: 500 }}
@@ -265,17 +254,23 @@ export function RoomList() {
                     Sức chứa: <strong>{room.capacity}</strong> học sinh
                   </span>
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => toast.info(`Đặt phòng ${room.name}`)}
-                      className="inline-flex items-center gap-1 px-2 py-1.5 text-[#2563eb] hover:bg-[#2563eb15] rounded-md transition-colors"
+                    <Link
+                      to={`/school/rooms/booking?roomId=${room.id}`}
+                      className={cn(
+                        "inline-flex items-center gap-1 px-2 py-1.5 rounded-md transition-colors",
+                        room.status === "active"
+                          ? "text-[#2563eb] hover:bg-[#2563eb15]"
+                          : "text-muted-foreground opacity-50 pointer-events-none"
+                      )}
                       style={{ fontSize: "11.5px", fontWeight: 500 }}
+                      title={room.status !== "active" ? "Phòng đang bảo trì / không hoạt động" : undefined}
                     >
                       <Zap className="w-3.5 h-3.5" />
                       Đặt phòng
-                    </button>
+                    </Link>
                     <Link
                       to={`/school/rooms/${room.id}`}
-                      className="inline-flex items-center gap-1 px-2 py-1.5 bg-[#2563eb15] text-[#2563eb] rounded-md hover:bg-[#2563eb] hover:text-white transition-colors"
+                      className="inline-flex items-center gap-1 px-2 py-1.5 bg-[#2563eb15] text-[#2563eb] rounded-md hover:bg-[#990803] hover:text-white transition-colors"
                       style={{ fontSize: "11.5px", fontWeight: 500 }}
                     >
                       Chi tiết

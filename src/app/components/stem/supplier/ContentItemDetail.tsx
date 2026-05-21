@@ -1,15 +1,26 @@
-import { useMemo } from "react";
-import { useParams, Link, useNavigate } from "react-router";
+import { toast } from "@/app/lib/toast";
 import {
-  BookOpen, ArrowLeft, History, Download, Pencil,
-  CheckCircle2, Clock, Tag, FileText, GraduationCap,
-  Star, Video, File, Package, Layers, Eye, XCircle,
+    ArrowLeft,
+    BookOpen,
+    CheckCircle2, Clock,
+    Download,
+    Eye,
+    File,
+    FileText, GraduationCap,
+    History,
+    Layers,
+    Package,
+    Pencil,
+    Tag,
+    Video,
+    XCircle
 } from "lucide-react";
+import { useMemo } from "react";
+import { Link, useNavigate, useParams } from "react-router";
 import { STEM_PROGRAM_LIST, lessons } from "../../mock-data/index";
 import { PageHeader } from "../ui/PageHeader";
 import { ProgramBadge } from "../ui/badges";
 import { formatRelative } from "../ui/format";
-import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  CONTENT ITEM DETAIL — Chi tiết bài giảng + Version Control      */
@@ -17,7 +28,7 @@ import { toast } from "@/app/lib/toast";
 
 /* ── 9 loại học liệu chuẩn ── */
 const MATERIAL_TYPES = [
-  { key: "khtc",  label: "Kế hoạch tổ chức" },
+  { key: "khtc",  label: "Kế hoạch giáo dục" },
   { key: "tlbd",  label: "TL bồi dưỡng GV" },
   { key: "khbd",  label: "Kế hoạch bài dạy" },
   { key: "pptx",  label: "Bài giảng Slides" },

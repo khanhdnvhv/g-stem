@@ -879,7 +879,7 @@ Thay "Tài liệu Giáo viên" (URL list tự do) bằng 9 slot cố định the
 ┌────────────────────────────────────────────────────────────┐
 │ 📎 TÀI LIỆU KÈM THEO (9 loại chuẩn Bộ GD&ĐT)              │
 ├────────────────────────────────────────────────────────────┤
-│ 1. 📅 Kế hoạch tổ chức              [⬆ Upload] [👁]       │
+│ 1. 📅 Kế hoạch giáo dục              [⬆ Upload] [👁]       │
 │    Đã có: kehoach-T11-2026.docx (2.1 MB)                  │
 │                                                            │
 │ 2. 📚 Tài liệu bồi dưỡng GV         [⬆ Upload]           │

@@ -9,14 +9,14 @@ import { PageHeader } from "../ui/PageHeader";
 import { ProgramBadge } from "../ui/badges";
 import { KpiCard } from "../ui/KpiCard";
 import { formatDateTime, formatRelative } from "../ui/format";
-import { toast } from "@/app/lib/toast";
+import { toast } from "sonner";
 
 /* ================================================================ */
 /*  STEM EXAM PARTICIPATION (Student)                               */
 /* ================================================================ */
 
 const STATUS_META: Record<STEMExam["status"], { label: string; color: string }> = {
-  upcoming: { label: "Sắp diễn ra", color: "#0891b2" },
+  upcoming: { label: "Sắp diễn ra", color: "#2563eb" },
   open:     { label: "Đang mở",     color: "#16a34a" },
   closed:   { label: "Đã đóng",     color: "#64748b" },
   graded:   { label: "Đã chấm",     color: "#c8a84e" },
@@ -30,14 +30,11 @@ const LEVEL_LABEL: Record<STEMExam["level"], string> = {
 };
 
 export function STEMExamParticipation() {
-  // V1 scope: chỉ hiển thị kỳ thi cấp trường
-  const schoolExams = stemExams.filter((e) => e.level === "school");
-
   const [statusFilter, setStatusFilter] = useState<STEMExam["status"] | "all">("all");
-  const filtered = schoolExams.filter((e) => statusFilter === "all" || e.status === statusFilter);
+  const filtered = stemExams.filter((e) => statusFilter === "all" || e.status === statusFilter);
 
   // Mock: HS đã đăng ký 3 kỳ thi đầu tiên
-  const registeredIds = new Set(schoolExams.slice(0, 3).map((e) => e.id));
+  const registeredIds = new Set(stemExams.slice(0, 3).map((e) => e.id));
   const myScores: Record<string, number> = {
     "EX-001": 8.5, "EX-003": 7.2,
   };
@@ -52,21 +49,21 @@ export function STEMExamParticipation() {
       />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <KpiCard icon={ClipboardCheck} label="Kỳ thi khả dụng" value={schoolExams.length} color="#16a34a" />
-        <KpiCard icon={CheckCircle2} label="Đã đăng ký" value={registeredIds.size} color="#0891b2" />
+        <KpiCard icon={ClipboardCheck} label="Kỳ thi khả dụng" value={stemExams.length} color="#16a34a" />
+        <KpiCard icon={CheckCircle2} label="Đã đăng ký" value={registeredIds.size} color="#2563eb" />
         <KpiCard icon={Trophy} label="Điểm cao nhất" value="8.5" color="#c8a84e" />
-        <KpiCard icon={AlertCircle} label="Sắp diễn ra" value={schoolExams.filter((e) => e.status === "upcoming").length} color="#f59e0b" />
+        <KpiCard icon={AlertCircle} label="Sắp diễn ra" value={stemExams.filter((e) => e.status === "upcoming").length} color="#f59e0b" />
       </div>
 
       <div className="flex items-center gap-2 flex-wrap">
         <button onClick={() => setStatusFilter("all")}
           className={`px-3 py-2 rounded-lg border ${statusFilter === "all" ? "bg-[#16a34a] text-white border-[#16a34a]" : "bg-card border-border hover:bg-secondary"}`}
           style={{ fontSize: "12px", fontWeight: 500 }}>
-          Tất cả ({schoolExams.length})
+          Tất cả ({stemExams.length})
         </button>
         {(Object.keys(STATUS_META) as Array<keyof typeof STATUS_META>).map((k) => {
           const meta = STATUS_META[k];
-          const count = schoolExams.filter((e) => e.status === k).length;
+          const count = stemExams.filter((e) => e.status === k).length;
           return (
             <button key={k} onClick={() => setStatusFilter(k)}
               className={`px-3 py-2 rounded-lg border ${statusFilter === k ? "text-white border-transparent" : "bg-card border-border hover:bg-secondary"}`}
@@ -143,7 +140,7 @@ export function STEMExamParticipation() {
                 {e.status === "upcoming" && (
                   <button onClick={() => toast.success(registered ? "Bỏ đăng ký" : `Đã đăng ký ${e.name}`)}
                     className={`w-full px-3 py-2 rounded-lg flex items-center justify-center gap-1.5 border ${
-                      registered ? "bg-[#16a34a]/10 text-[#16a34a] border-[#16a34a]/30" : "bg-[#0891b2] text-white border-[#0891b2]"
+                      registered ? "bg-[#16a34a]/10 text-[#16a34a] border-[#16a34a]/30" : "bg-[#2563eb] text-white border-[#2563eb]"
                     }`}
                     style={{ fontSize: "12.5px", fontWeight: 500 }}>
                     {registered ? <><CheckCircle2 className="w-4 h-4" /> Đã đăng ký</>

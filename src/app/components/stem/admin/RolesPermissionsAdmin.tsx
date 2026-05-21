@@ -1,188 +1,391 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { Link } from "react-router";
 import {
-  Shield, Plus, Pencil, Copy, Trash2, Check, X,
-  Users, Lock,
+  Shield, Users, Check, X, LayoutGrid, Diff, Info,
+  Building2, School, Package, ChevronRight,
 } from "lucide-react";
-import { roleLabelsMap } from "../../AuthContext";
-import type { StemRole } from "../../AuthContext";
-import { PERMISSIONS } from "../../permissions";
 import { PageHeader } from "../ui/PageHeader";
-import { KpiCard } from "../ui/KpiCard";
-import { toast } from "@/app/lib/toast";
+import { formatDate } from "../ui/format";
+import { MOCK_ACCOUNTS, ROLE_DISPLAY, STATUS_DISPLAY } from "./account-data";
+import { MOCK_ORGS } from "./org-data";
+import {
+  SYSTEM_ROLES, ROLE_CONFIG_MAP, MODULES, PERM_MATRIX,
+  ACTION_LABELS, ACTIONS, getAccountCount,
+} from "./role-data";
+import type { RoleKey, Action } from "./role-data";
+import type { OrgType } from "./org-data";
 
 /* ================================================================ */
-/*  ROLES & PERMISSIONS (Admin) — RBAC Matrix manager               */
+/*  HELPERS                                                         */
 /* ================================================================ */
+const ORG_CFG: Record<OrgType, { label: string; color: string; bg: string }> = {
+  so_gd:  { label: "Sở GD",  color: "#1e40af", bg: "#dbeafe" },
+  truong: { label: "Trường", color: "#0e7490", bg: "#cffafe" },
+  ncc:    { label: "NCC",    color: "#6d28d9", bg: "#ede9fe" },
+};
 
-const NAMESPACES = [
-  { key: "/supplier",    label: "NCC" },
-  { key: "/distributor", label: "Đại lý" },
-  { key: "/school",      label: "Trường" },
-  { key: "/authority",   label: "Sở/Bộ" },
-  { key: "/teacher",     label: "GV" },
-  { key: "/student",     label: "HS" },
-  { key: "/admin",       label: "Admin" },
-  { key: "/shared",      label: "Chung" },
-];
-
-function hasAccess(role: StemRole, namespace: string): "full" | "partial" | "none" {
-  const perms = PERMISSIONS[role] || [];
-  if (perms.includes("*")) return "full";
-  const matchFull = perms.some((p) => p === namespace);
-  if (matchFull) return "full";
-  const matchPartial = perms.some((p) => p.startsWith(namespace + "/"));
-  return matchPartial ? "partial" : "none";
+function initials(name: string) {
+  return name.trim().split(" ").slice(-2).map((p) => p[0]).join("").toUpperCase();
 }
 
-export function RolesPermissionsAdmin() {
-  const [selectedRole, setSelectedRole] = useState<StemRole>("school_principal");
-  const roles = Object.keys(roleLabelsMap) as StemRole[];
-  const roleInfo = roleLabelsMap[selectedRole];
-  const rolePerms = PERMISSIONS[selectedRole] || [];
+function relativeTime(iso: string | null) {
+  if (!iso) return "Chưa đăng nhập";
+  const h = Math.floor((Date.now() - new Date(iso).getTime()) / 3_600_000);
+  if (h < 1) return "Vừa xong";
+  if (h < 24) return `${h} giờ trước`;
+  const d = Math.floor(h / 24);
+  return d < 30 ? `${d} ngày trước` : `${Math.floor(d / 30)} tháng trước`;
+}
+
+/* ================================================================ */
+/*  TAB: DANH SÁCH TÀI KHOẢN                                       */
+/* ================================================================ */
+function AccountsTab({ roleKey }: { roleKey: RoleKey }) {
+  const config   = ROLE_CONFIG_MAP[roleKey];
+  const orgMap   = useMemo(() => Object.fromEntries(MOCK_ORGS.map((o) => [o.id, o])), []);
+
+  const accounts = useMemo(
+    () => MOCK_ACCOUNTS.filter((a) => (config.stemRoles as string[]).includes(a.role)),
+    [config.stemRoles]
+  );
+
+  if (accounts.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 gap-3 text-muted-foreground">
+        <Users className="w-10 h-10 opacity-20" />
+        <p className="text-[13px]">Chưa có tài khoản nào với vai trò này</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-5">
-      <PageHeader
-        icon={Shield}
-        title="Vai trò & Phân quyền (RBAC)"
-        subtitle="Ma trận phân quyền 15 StemRole × 8 namespace. Tạo role mới, sao chép, điều chỉnh permissions chi tiết."
-        accentColor="#e74c3c"
-        actions={
-          <>
-            <button onClick={() => toast.success(`Sao chép role ${roleInfo.label}`)}
-              className="flex items-center gap-1.5 px-3 py-2 border border-border bg-card rounded-lg hover:bg-secondary"
-              style={{ fontSize: "13px", fontWeight: 500 }}>
-              <Copy className="w-4 h-4" /> Sao chép
-            </button>
-            <button onClick={() => toast.success("Tạo role tùy chỉnh")}
-              className="flex items-center gap-1.5 px-3 py-2 bg-[#e74c3c] text-white rounded-lg hover:opacity-90"
-              style={{ fontSize: "13px", fontWeight: 500 }}>
-              <Plus className="w-4 h-4" /> Tạo role mới
-            </button>
-          </>
-        }
-      />
+    <div className="overflow-x-auto">
+      <table className="w-full text-[12.5px]">
+        <thead className="bg-secondary/50 text-muted-foreground text-[11px] font-semibold">
+          <tr>
+            <th className="px-4 py-2.5 text-left">Họ tên</th>
+            <th className="px-4 py-2.5 text-left">Tổ chức</th>
+            <th className="px-4 py-2.5 text-left">Trạng thái</th>
+            <th className="px-4 py-2.5 text-left">Đăng nhập cuối</th>
+            <th className="px-4 py-2.5 text-left">Ngày tạo</th>
+            <th className="px-4 py-2.5 text-right" />
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-border">
+          {accounts.map((acc) => {
+            const roleCfg   = ROLE_DISPLAY[acc.role];
+            const statusCfg = STATUS_DISPLAY[acc.status];
+            const org       = orgMap[acc.orgId];
+            const orgCfg    = org ? ORG_CFG[org.type] : null;
+            const bgColor   = roleCfg.color + "22";
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <KpiCard icon={Shield} label="Roles hệ thống" value={roles.length} color="#e74c3c" />
-        <KpiCard icon={Lock} label="Namespace" value={NAMESPACES.length} color="#7c3aed" />
-        <KpiCard icon={Users} label="Role có user" value={roles.length - 1} color="#16a34a" />
-        <KpiCard icon={Pencil} label="Custom roles" value={0} color="#c8a84e" subtitle="Chưa tạo role tùy chỉnh" />
+            return (
+              <tr key={acc.id} className="hover:bg-secondary/30 transition-colors">
+                {/* Họ tên */}
+                <td className="px-4 py-3">
+                  <Link to={`/admin/accounts/${acc.id}`}
+                    className="flex items-center gap-2 hover:text-[#1e40af] transition-colors">
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 font-semibold text-[10px]"
+                      style={{ backgroundColor: bgColor, color: roleCfg.color }}>
+                      {initials(acc.name)}
+                    </div>
+                    <div>
+                      <p className="font-medium leading-tight">{acc.name}</p>
+                      <p className="text-muted-foreground text-[10px] font-mono">{acc.code}</p>
+                    </div>
+                  </Link>
+                </td>
+
+                {/* Tổ chức */}
+                <td className="px-4 py-3">
+                  {org && orgCfg ? (
+                    <div className="flex items-center gap-1.5 max-w-[160px]">
+                      <span className="px-1 py-0.5 rounded text-[9px] font-semibold shrink-0"
+                        style={{ color: orgCfg.color, backgroundColor: orgCfg.bg }}>
+                        {orgCfg.label}
+                      </span>
+                      <span className="truncate text-[11.5px]">{org.name}</span>
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </td>
+
+                {/* Trạng thái */}
+                <td className="px-4 py-3">
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold"
+                    style={{ color: statusCfg.color, backgroundColor: statusCfg.bg }}>
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: statusCfg.dot }} />
+                    {statusCfg.label}
+                  </span>
+                </td>
+
+                {/* Đăng nhập cuối */}
+                <td className="px-4 py-3 text-muted-foreground text-[11.5px]">
+                  {relativeTime(acc.lastLogin)}
+                </td>
+
+                {/* Ngày tạo */}
+                <td className="px-4 py-3 text-muted-foreground text-[11.5px]">
+                  {formatDate(acc.createdAt)}
+                </td>
+
+                {/* Link chi tiết */}
+                <td className="px-4 py-3 text-right">
+                  <Link to={`/admin/accounts/${acc.id}`}
+                    className="p-1 hover:bg-secondary rounded transition-colors inline-flex">
+                    <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+                  </Link>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/* ================================================================ */
+/*  TAB: DANH SÁCH QUYỀN                                           */
+/* ================================================================ */
+function PermissionsTab({ roleKey }: { roleKey: RoleKey }) {
+  const [diffMode, setDiffMode] = useState(false);
+
+  const perms        = PERM_MATRIX[roleKey];
+  const studentPerms = PERM_MATRIX["student"];
+
+  const visibleModules = diffMode
+    ? MODULES.filter((m) => ACTIONS.some((a) => perms[m.key][a] !== studentPerms[m.key][a]))
+    : MODULES;
+
+  return (
+    <div className="space-y-0">
+      {/* Toolbar */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-secondary/20">
+        <div className="flex items-center gap-3 text-[11.5px] text-muted-foreground">
+          <span className="flex items-center gap-1.5">
+            <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
+              <Check className="w-2.5 h-2.5 text-green-700" />
+            </div>
+            Được phép
+          </span>
+          <span className="flex items-center gap-1.5">
+            <div className="w-4 h-4 rounded-full bg-red-50 flex items-center justify-center">
+              <X className="w-2.5 h-2.5 text-red-400" />
+            </div>
+            Không được phép
+          </span>
+        </div>
+
+        {/* Toggle */}
+        <div className="flex items-center gap-0.5 bg-secondary rounded-lg p-1">
+          <button onClick={() => setDiffMode(false)}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[11.5px] font-medium transition-colors
+              ${!diffMode ? "bg-card shadow text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+            <LayoutGrid className="w-3 h-3" /> Tất cả
+          </button>
+          <button onClick={() => setDiffMode(true)}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[11.5px] font-medium transition-colors
+              ${diffMode ? "bg-card shadow text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+            <Diff className="w-3 h-3" /> Khác biệt
+          </button>
+        </div>
       </div>
 
-      {/* Matrix */}
-      <div className="bg-card rounded-xl border border-border overflow-hidden">
-        <div className="p-4 border-b border-border">
-          <h3 style={{ fontSize: "14px", fontWeight: 600 }}>Ma trận phân quyền 15 × 8</h3>
-          <p className="text-muted-foreground" style={{ fontSize: "11.5px" }}>
-            <span className="inline-block w-3 h-3 bg-[#16a34a] rounded-sm mr-1 align-middle" /> Full access
-            <span className="inline-block w-3 h-3 bg-[#f59e0b] rounded-sm mr-1 ml-3 align-middle" /> Partial
-            <span className="inline-block w-3 h-3 bg-secondary border border-border rounded-sm mr-1 ml-3 align-middle" /> Denied
-          </p>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-secondary/30 sticky top-0">
-              <tr>
-                <th className="px-3 py-2 text-left sticky left-0 bg-secondary/30 z-10 text-muted-foreground" style={{ fontSize: "11px", fontWeight: 600 }}>Role</th>
-                {NAMESPACES.map((n) => (
-                  <th key={n.key} className="px-3 py-2 text-center text-muted-foreground" style={{ fontSize: "10.5px", fontWeight: 600 }}>
-                    {n.label}
-                  </th>
+      {/* Table */}
+      <div className="overflow-x-auto">
+        {visibleModules.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-muted-foreground gap-2">
+            <Diff className="w-8 h-8 opacity-20" />
+            <p className="text-[13px]">Phân quyền giống hệt vai trò Học sinh</p>
+          </div>
+        ) : (
+          <table className="w-full text-[12px]">
+            <thead>
+              <tr className="bg-secondary/50 text-muted-foreground text-[10.5px] font-semibold">
+                <th className="px-4 py-2.5 text-left sticky left-0 bg-secondary/50">Phân hệ chức năng</th>
+                {ACTIONS.map((a) => (
+                  <th key={a} className="px-3 py-2.5 text-center w-24">{ACTION_LABELS[a]}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {roles.map((r) => {
-                const info = roleLabelsMap[r];
-                const active = selectedRole === r;
+              {visibleModules.map((mod) => {
+                const row    = perms[mod.key];
+                const hasAny = ACTIONS.some((a) => row[a]);
                 return (
-                  <tr key={r} onClick={() => setSelectedRole(r)}
-                    className={`cursor-pointer ${active ? "bg-[#e74c3c]/5" : "hover:bg-secondary/30"}`}>
-                    <td className="px-3 py-2 sticky left-0 bg-inherit">
-                      <div className="flex items-center gap-1.5">
-                        <span className="px-2 py-0.5 rounded" style={{
-                          fontSize: "10.5px", fontWeight: 600,
-                          color: info.color, backgroundColor: info.bg,
-                        }}>
-                          {info.label}
-                        </span>
-                      </div>
-                    </td>
-                    {NAMESPACES.map((n) => {
-                      const acc = hasAccess(r, n.key);
-                      return (
-                        <td key={n.key} className="px-3 py-2 text-center">
-                          <div className="inline-flex items-center justify-center w-6 h-6 rounded" style={{
-                            backgroundColor: acc === "full" ? "#16a34a" : acc === "partial" ? "#f59e0b" : "var(--secondary)",
-                            border: acc === "none" ? "1px solid var(--border)" : "none",
-                          }}>
-                            {acc === "full" && <Check className="w-3.5 h-3.5 text-white" />}
-                            {acc === "partial" && <span className="text-white" style={{ fontSize: "10px", fontWeight: 700 }}>½</span>}
-                            {acc === "none" && <X className="w-3 h-3 text-muted-foreground" />}
-                          </div>
-                        </td>
-                      );
-                    })}
+                  <tr key={mod.key}
+                    className={`transition-colors hover:bg-secondary/30 ${!hasAny ? "opacity-55" : ""}`}>
+                    <td className="px-4 py-2.5 font-medium text-[12px] sticky left-0 bg-card">{mod.label}</td>
+                    {ACTIONS.map((a: Action) => (
+                      <td key={a} className="px-3 py-2.5">
+                        <div className="flex items-center justify-center">
+                          {row[a] ? (
+                            <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
+                              <Check className="w-3 h-3 text-green-700" />
+                            </div>
+                          ) : (
+                            <div className="w-5 h-5 rounded-full bg-red-50 flex items-center justify-center">
+                              <X className="w-2.5 h-2.5 text-red-400" />
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    ))}
                   </tr>
                 );
               })}
             </tbody>
           </table>
-        </div>
+        )}
       </div>
 
-      {/* Role detail panel */}
-      <div className="bg-card rounded-xl border border-border p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <Shield className="w-5 h-5 text-[#e74c3c]" />
-          <h3 style={{ fontSize: "15px", fontWeight: 700 }}>
-            Chi tiết: {roleInfo.label}
-          </h3>
-          <span className="ml-auto text-muted-foreground font-mono" style={{ fontSize: "11px" }}>{selectedRole}</span>
-        </div>
-        <p className="text-muted-foreground mb-4" style={{ fontSize: "12px" }}>
-          Danh sách path prefix mà role này được phép truy cập. <code className="bg-secondary px-1 rounded font-mono">*</code> nghĩa là toàn quyền.
+      {/* Summary */}
+      <div className="grid grid-cols-4 gap-0 border-t border-border">
+        {ACTIONS.map((action, i) => {
+          const allowed = MODULES.filter((m) => perms[m.key][action]).length;
+          const config  = ROLE_CONFIG_MAP[roleKey];
+          return (
+            <div key={action}
+              className={`px-4 py-3 text-center ${i < 3 ? "border-r border-border" : ""} bg-secondary/20`}>
+              <p className="text-muted-foreground text-[10px] mb-0.5">{ACTION_LABELS[action]}</p>
+              <p className="font-bold text-[15px]" style={{ color: config.color }}>{allowed}</p>
+              <p className="text-muted-foreground text-[9.5px]">/ {MODULES.length}</p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ================================================================ */
+/*  MAIN                                                            */
+/* ================================================================ */
+type TabKey = "accounts" | "permissions";
+
+export function RolesPermissionsAdmin() {
+  const [selectedRole, setSelectedRole] = useState<RoleKey>("student");
+  const [tab, setTab] = useState<TabKey>("accounts");
+
+  const config = ROLE_CONFIG_MAP[selectedRole];
+  const Icon   = config.icon;
+  const count  = getAccountCount(selectedRole);
+
+  return (
+    <div className="space-y-4">
+      <PageHeader
+        icon={Shield}
+        title="Vai trò & Phân quyền"
+        subtitle="6 vai trò cố định V1 — chọn vai trò để xem tài khoản được phân quyền và ma trận quyền hạn."
+        accentColor="#1e40af"
+      />
+
+      {/* Banner */}
+      <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-200 rounded-xl px-4 py-2.5">
+        <Info className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+        <p className="text-[12.5px] text-blue-800">
+          Phân quyền V1 được cố định theo thiết kế hệ thống.
+          Tính năng tuỳ chỉnh vai trò sẽ được mở trong phiên bản <strong>V2</strong>.
         </p>
-        <div className="flex flex-wrap gap-2">
-          {rolePerms.map((p) => (
-            <span key={p} className="inline-flex items-center gap-1 px-2.5 py-1 bg-secondary rounded-md font-mono"
-              style={{ fontSize: "11.5px" }}>
-              <Check className="w-3 h-3 text-[#16a34a]" />
-              {p}
-            </span>
-          ))}
-        </div>
-        <div className="mt-5 flex items-center gap-2">
-          <button onClick={() => toast.info(`Sửa permissions role ${roleInfo.label}`)}
-            className="flex items-center gap-1.5 px-3 py-2 bg-[#e74c3c] text-white rounded-lg hover:opacity-90"
-            style={{ fontSize: "13px", fontWeight: 500 }}>
-            <Pencil className="w-4 h-4" /> Sửa permissions
-          </button>
-          <button onClick={() => toast.info(`Xem users có role ${roleInfo.label}`)}
-            className="flex items-center gap-1.5 px-3 py-2 border border-border rounded-lg hover:bg-secondary"
-            style={{ fontSize: "13px", fontWeight: 500 }}>
-            <Users className="w-4 h-4" /> Xem users có role này
-          </button>
-          {!["system_admin", "supplier_admin", "distributor_admin", "school_principal", "authority_admin", "teacher", "student"].includes(selectedRole) && (
-            <button onClick={() => toast.error(`Xóa role ${roleInfo.label}`)}
-              className="flex items-center gap-1.5 px-3 py-2 border border-[#dc2626]/30 text-[#dc2626] rounded-lg hover:bg-[#dc2626]/5 ml-auto"
-              style={{ fontSize: "13px", fontWeight: 500 }}>
-              <Trash2 className="w-4 h-4" /> Xóa role
-            </button>
-          )}
-        </div>
       </div>
 
-      <div className="bg-gradient-to-br from-[#e74c3c]/5 to-[#c8a84e]/5 rounded-xl border border-border p-4 flex items-start gap-3">
-        <Lock className="w-5 h-5 text-[#e74c3c] shrink-0 mt-0.5" />
-        <div>
-          <p style={{ fontSize: "13px", fontWeight: 600 }}>Quy tắc phân quyền</p>
-          <p className="text-muted-foreground mt-1" style={{ fontSize: "12px", lineHeight: 1.6 }}>
-            RBAC matrix lưu trong <code className="bg-secondary px-1 rounded font-mono">permissions.ts</code>.
-            Khi sửa quyền của role, mọi user có role đó sẽ bị ảnh hưởng ngay lập tức ở lần load trang tiếp theo.
-            Nên log mọi thay đổi permission vào Audit Log để kiểm toán.
-          </p>
+      {/* Master-detail layout */}
+      <div className="flex gap-4 items-start">
+
+        {/* ===== LEFT PANEL: Role list ===== */}
+        <div className="w-52 shrink-0 bg-card rounded-xl border border-border overflow-hidden sticky top-4">
+          <div className="px-3 py-2.5 border-b border-border">
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Vai trò hệ thống</p>
+          </div>
+          <div className="py-1">
+            {SYSTEM_ROLES.map((role) => {
+              const RIcon    = role.icon;
+              const rCount   = getAccountCount(role.key);
+              const isActive = selectedRole === role.key;
+              return (
+                <button key={role.key}
+                  onClick={() => { setSelectedRole(role.key); setTab("accounts"); }}
+                  className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors
+                    ${isActive ? "bg-[#1e40af]/8" : "hover:bg-secondary"}`}>
+                  {/* Left accent bar */}
+                  <div className={`w-0.5 h-8 rounded-full shrink-0 transition-colors
+                    ${isActive ? "" : "bg-transparent"}`}
+                    style={{ backgroundColor: isActive ? role.color : "transparent" }} />
+
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                    style={{ backgroundColor: isActive ? role.bg : "var(--secondary)" }}>
+                    <RIcon className="w-3.5 h-3.5"
+                      style={{ color: isActive ? role.color : "var(--muted-foreground)" }} />
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-[12.5px] leading-tight truncate font-medium
+                      ${isActive ? "" : "text-muted-foreground"}`}
+                      style={{ color: isActive ? role.color : undefined }}>
+                      {role.label}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">{rCount} tài khoản</p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ===== RIGHT PANEL: Detail ===== */}
+        <div className="flex-1 min-w-0 bg-card rounded-xl border border-border overflow-hidden">
+
+          {/* Role header */}
+          <div className="flex items-center gap-3 px-5 py-4 border-b border-border">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+              style={{ backgroundColor: config.bg }}>
+              <Icon className="w-5 h-5" style={{ color: config.color }} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="font-bold text-[16px]">{config.label}</h2>
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-secondary rounded text-[10px] font-medium text-muted-foreground">
+                  <Shield className="w-2.5 h-2.5" /> Hệ thống
+                </span>
+              </div>
+              <p className="text-muted-foreground text-[12px] truncate">{config.description}</p>
+            </div>
+            <div className="text-right shrink-0">
+              <p className="font-bold text-[18px]" style={{ color: config.color }}>
+                {count.toLocaleString("vi-VN")}
+              </p>
+              <p className="text-muted-foreground text-[10.5px]">tài khoản</p>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex border-b border-border">
+            {([
+              { key: "accounts",    label: "Danh sách tài khoản", icon: Users   },
+              { key: "permissions", label: "Danh sách quyền",      icon: Shield  },
+            ] as { key: TabKey; label: string; icon: typeof Users }[]).map(({ key, label, icon: TIcon }) => (
+              <button key={key} onClick={() => setTab(key)}
+                className={`flex items-center gap-1.5 px-5 py-3 text-[13px] font-medium border-b-2 transition-colors
+                  ${tab === key
+                    ? "border-[#1e40af] text-[#1e40af]"
+                    : "border-transparent text-muted-foreground hover:text-foreground"}`}>
+                <TIcon className="w-3.5 h-3.5" />
+                {label}
+                {key === "accounts" && (
+                  <span className="px-1.5 py-0.5 rounded-full text-[10px] font-semibold ml-0.5"
+                    style={{ color: config.color, backgroundColor: config.bg }}>
+                    {count}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Tab content */}
+          {tab === "accounts"    && <AccountsTab    roleKey={selectedRole} />}
+          {tab === "permissions" && <PermissionsTab roleKey={selectedRole} />}
         </div>
       </div>
     </div>

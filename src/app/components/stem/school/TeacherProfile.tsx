@@ -1,10 +1,11 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Link, useParams } from "react-router";
 import {
   UserCheck, Mail, Phone, Award, BookOpen, Calendar, BarChart3,
   GraduationCap, ArrowLeft, ChevronRight, Edit2, Puzzle, FileText, Target,
 } from "lucide-react";
-import { scheduleEntries, tenantsByType, STEM_PROGRAMS } from "../../mock-data/index";
+import { tenantsByType, STEM_PROGRAMS } from "../../mock-data/index";
+import { getStoredEntries } from "../../../lib/schedule-store";
 import type { StemProgram } from "../../mock-data/index";
 import { useAuth } from "../../AuthContext";
 import { PageHeader } from "../ui/PageHeader";
@@ -65,7 +66,7 @@ interface TeacherDetail {
 }
 
 const AVATAR_COLORS = [
-  "linear-gradient(145deg, #2563eb, #1e40af)",
+  "linear-gradient(145deg, #990803, #7a0602)",
   "linear-gradient(145deg, #7c3aed, #5b21b6)",
   "linear-gradient(145deg, #0891b2, #0e7490)",
   "linear-gradient(145deg, #16a34a, #166534)",
@@ -76,8 +77,8 @@ const AVATAR_COLORS = [
 function buildTeacher(schoolId: string, index: number): TeacherDetail {
   const name = NAMES[index % NAMES.length];
   const teacherId = `U-TCH-${String(index + 1).padStart(2, "0")}`;
-  const schoolEntries = scheduleEntries.filter(
-    (s) => s.schoolId === schoolId && s.teacherId === teacherId
+  const schoolEntries = getStoredEntries(schoolId).filter(
+    (s) => s.teacherId === teacherId
   );
   const programs = Array.from(new Set(schoolEntries.map((e) => e.programCode))) as StemProgram[];
   const allPrograms: StemProgram[] = ["CT1", "CT2", "CT3", "CT4", "CT5"];
@@ -133,8 +134,8 @@ export function TeacherProfile() {
     );
   }
 
-  const teacherSchedule = scheduleEntries.filter(
-    (s) => s.schoolId === tenantId && s.teacherId === teacher.id
+  const teacherSchedule = getStoredEntries(tenantId).filter(
+    (s) => s.teacherId === teacher.id
   );
   const completedMilestones = Math.ceil((teacher.trainingProgress / 100) * TRAINING_MILESTONES.length);
 
@@ -158,7 +159,7 @@ export function TeacherProfile() {
         icon={UserCheck}
         title="Hồ sơ Giáo viên STEM"
         subtitle={`${teacher.name} · GV ${teacher.subject}`}
-        accentColor="#2563eb"
+        accentColor="#990803"
         actions={
           <button
             onClick={() => toast.info(`Chỉnh sửa hồ sơ ${teacher.name}`)}
@@ -223,14 +224,14 @@ export function TeacherProfile() {
                 <dt className="text-xs text-muted-foreground">Email</dt>
                 <dd className="text-sm font-semibold text-foreground flex items-center gap-1 mt-0.5">
                   <Mail className="w-3.5 h-3.5 text-[#2563eb] shrink-0" />
-                  <a href={`mailto:${teacher.email}`} className="hover:text-[#2563eb] truncate">{teacher.email}</a>
+                  <a href={`mailto:${teacher.email}`} className="hover:text-[#990803] truncate">{teacher.email}</a>
                 </dd>
               </div>
               <div>
                 <dt className="text-xs text-muted-foreground">Điện thoại</dt>
                 <dd className="text-sm font-semibold text-foreground flex items-center gap-1 mt-0.5">
                   <Phone className="w-3.5 h-3.5 text-[#2563eb] shrink-0" />
-                  <a href={`tel:${teacher.phone}`} className="hover:text-[#2563eb]">{teacher.phone}</a>
+                  <a href={`tel:${teacher.phone}`} className="hover:text-[#990803]">{teacher.phone}</a>
                 </dd>
               </div>
               <div>
@@ -383,22 +384,22 @@ export function TeacherProfile() {
               <Mail className="w-4 h-4 text-[#2563eb]" />
               Nhắn tin
             </button>
-            <button
-              onClick={() => toast.info(`Xem thời khóa biểu của ${teacher.name}`)}
+            <Link
+              to={`/school/schedule?teacher=${teacher.id}`}
               className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg border border-border hover:bg-secondary text-left"
               style={{ fontSize: "13px" }}
             >
               <Calendar className="w-4 h-4 text-[#7c3aed]" />
               Xem TKB
-            </button>
-            <button
-              onClick={() => toast.info(`Gán thêm lớp cho ${teacher.name}`)}
-              className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg bg-[#2563eb] text-white hover:opacity-90"
+            </Link>
+            <Link
+              to="/school/stem-slots"
+              className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg bg-[#990803] text-white hover:opacity-90"
               style={{ fontSize: "13px" }}
             >
               <UserCheck className="w-4 h-4" />
               Gán thêm lớp
-            </button>
+            </Link>
           </div>
         </div>
       </div>

@@ -1,15 +1,13 @@
-import { useState } from "react";
+﻿import { Link, useNavigate } from "react-router";
 import {
   Building2, MapPin, Phone, Mail, Users, GraduationCap,
-  Calendar, Award, Edit2, CheckCircle, Package, Star, Layers,
+  Calendar, Award, Edit2, CheckCircle, Package, Star, Layers, ShoppingBag,
 } from "lucide-react";
 import { schoolProfileData } from "../../mock-data/index";
 import type { SchoolProfileData } from "../../mock-data/index";
 import { useAuth } from "../../AuthContext";
 import { PageHeader } from "../ui/PageHeader";
 import { KpiCard } from "../ui/KpiCard";
-import { ProgramBadge } from "../ui/badges";
-import { toast } from "@/app/lib/toast";
 
 /* ================================================================ */
 /*  SCHOOL PROFILE — hồ sơ trường học cho Hiệu trưởng               */
@@ -63,8 +61,15 @@ function SectionCard({ title, icon: Icon, children }: {
 
 export function SchoolProfile() {
   const { user } = useAuth();
-  const profile = schoolProfileData;
-  const [_editing] = useState(false);
+  const navigate = useNavigate();
+  const tenantId = user?.tenantType === "school" ? user.tenantId : "";
+  const profile = (() => {
+    try {
+      const stored = localStorage.getItem(`gstem_school_profile_${tenantId}`);
+      if (stored) return { ...schoolProfileData, ...JSON.parse(stored) };
+    } catch { /* ignore */ }
+    return schoolProfileData;
+  })();
 
   const licensePercent = Math.round((profile.licenseUsed / profile.licenseQuota) * 100);
 
@@ -75,16 +80,26 @@ export function SchoolProfile() {
         icon={Building2}
         title="Hồ sơ Trường học"
         subtitle={`${profile.shortName} · ${profile.province}`}
-        accentColor="#2563eb"
+        accentColor="#990803"
         actions={
-          <button
-            onClick={() => toast.info("Chỉnh sửa thông tin trường học")}
-            className="flex items-center gap-1.5 px-3 py-2 border border-border bg-card rounded-lg hover:bg-secondary"
-            style={{ fontSize: "13px", fontWeight: 500 }}
-          >
-            <Edit2 className="w-4 h-4" />
-            Chỉnh sửa
-          </button>
+          <>
+            <Link
+              to="/school/purchase"
+              className="flex items-center gap-1.5 px-3 py-2 border border-border bg-card rounded-lg hover:bg-secondary"
+              style={{ fontSize: "13px", fontWeight: 500, textDecoration: "none", color: "inherit" }}
+            >
+              <ShoppingBag className="w-4 h-4" />
+              Mua sắm gói STEM
+            </Link>
+            <button
+              onClick={() => navigate("/school/settings")}
+              className="flex items-center gap-1.5 px-3 py-2 bg-[#990803] text-white rounded-lg hover:opacity-90"
+              style={{ fontSize: "13px", fontWeight: 500 }}
+            >
+              <Edit2 className="w-4 h-4" />
+              Chỉnh sửa
+            </button>
+          </>
         }
       />
 
@@ -96,7 +111,7 @@ export function SchoolProfile() {
             className="w-20 h-20 rounded-2xl flex items-center justify-center text-white shrink-0 select-none"
             style={{
               fontSize: "22px", fontWeight: 800,
-              background: "linear-gradient(145deg, #2563eb, #1e40af)",
+              background: "linear-gradient(145deg, #990803, #7a0602)",
             }}
           >
             {profile.shortName.split(" ").map((w) => w[0]).slice(0, 2).join("")}
@@ -178,11 +193,11 @@ export function SchoolProfile() {
                   <p className="text-sm font-semibold text-foreground mt-0.5">{profile.principalName}</p>
                 </div>
                 <div className="text-right">
-                  <a href={`tel:${profile.principalPhone}`} className="flex items-center gap-1 text-muted-foreground hover:text-[#2563eb]" style={{ fontSize: "12px" }}>
+                  <a href={`tel:${profile.principalPhone}`} className="flex items-center gap-1 text-muted-foreground hover:text-[#990803]" style={{ fontSize: "12px" }}>
                     <Phone className="w-3.5 h-3.5" />
                     {profile.principalPhone}
                   </a>
-                  <a href={`mailto:${profile.principalEmail}`} className="flex items-center gap-1 text-muted-foreground hover:text-[#2563eb] mt-0.5" style={{ fontSize: "12px" }}>
+                  <a href={`mailto:${profile.principalEmail}`} className="flex items-center gap-1 text-muted-foreground hover:text-[#990803] mt-0.5" style={{ fontSize: "12px" }}>
                     <Mail className="w-3.5 h-3.5" />
                     {profile.principalEmail}
                   </a>
@@ -199,7 +214,7 @@ export function SchoolProfile() {
                   <p className="text-xs text-muted-foreground">Điều phối viên STEM</p>
                   <p className="text-sm font-semibold text-foreground mt-0.5">{profile.stemCoordinatorName}</p>
                 </div>
-                <a href={`tel:${profile.stemCoordinatorPhone}`} className="flex items-center gap-1 text-muted-foreground hover:text-[#2563eb]" style={{ fontSize: "12px" }}>
+                <a href={`tel:${profile.stemCoordinatorPhone}`} className="flex items-center gap-1 text-muted-foreground hover:text-[#990803]" style={{ fontSize: "12px" }}>
                   <Phone className="w-3.5 h-3.5" />
                   {profile.stemCoordinatorPhone}
                 </a>
@@ -290,39 +305,6 @@ export function SchoolProfile() {
               </span>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* ── Cài đặt nhanh ── */}
-      <div className="bg-card border border-border rounded-xl p-5">
-        <h2 className="text-foreground mb-4" style={{ fontSize: "14px", fontWeight: 700 }}>
-          Cài đặt nhanh
-        </h2>
-        <div className="flex flex-wrap gap-3">
-          <button
-            onClick={() => toast.info("Mở form cập nhật thông tin trường")}
-            className="flex items-center gap-2 px-4 py-2.5 bg-[#2563eb] text-white rounded-lg hover:opacity-90 transition-opacity"
-            style={{ fontSize: "13px", fontWeight: 500 }}
-          >
-            <Edit2 className="w-4 h-4" />
-            Cập nhật thông tin
-          </button>
-          <button
-            onClick={() => toast.info("Quản lý tài khoản người dùng trong trường")}
-            className="flex items-center gap-2 px-4 py-2.5 border border-border bg-card rounded-lg hover:bg-secondary transition-colors"
-            style={{ fontSize: "13px", fontWeight: 500 }}
-          >
-            <Users className="w-4 h-4" />
-            Quản lý người dùng
-          </button>
-          <button
-            onClick={() => toast.info("Tải báo cáo hồ sơ trường học (PDF)")}
-            className="flex items-center gap-2 px-4 py-2.5 border border-border bg-card rounded-lg hover:bg-secondary transition-colors"
-            style={{ fontSize: "13px", fontWeight: 500 }}
-          >
-            <Package className="w-4 h-4" />
-            Tải báo cáo
-          </button>
         </div>
       </div>
 

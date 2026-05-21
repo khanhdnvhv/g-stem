@@ -1,4 +1,5 @@
-import { useState } from "react";
+﻿import { useState } from "react";
+import { Link, useNavigate } from "react-router";
 import {
   KeyRound, Plus, Search, RefreshCw, Download, UserPlus,
   CheckCircle2, AlertTriangle,
@@ -18,6 +19,7 @@ export function SchoolLicensePanel() {
   const { user } = useAuth();
   const tenantId = user?.tenantType === "school" ? user.tenantId : tenantsByType.school[0].id;
 
+  const navigate = useNavigate();
   const licenses = licensesByTenant(tenantId);
   const [search, setSearch] = useState("");
 
@@ -37,16 +39,16 @@ export function SchoolLicensePanel() {
         icon={KeyRound}
         title="License & Tài khoản"
         subtitle="Phân bổ giấy phép sử dụng phần mềm học tập cho giáo viên và học sinh."
-        accentColor="#2563eb"
+        accentColor="#990803"
         actions={
           <>
-            <button onClick={() => toast.success("Phân bổ license hàng loạt cho danh sách HS")}
+            <Link to="/school/license-assign"
               className="flex items-center gap-1.5 px-3 py-2 border border-border bg-card rounded-lg hover:bg-secondary"
-              style={{ fontSize: "13px", fontWeight: 500 }}>
-              <UserPlus className="w-4 h-4" /> Phân bổ hàng loạt
-            </button>
+              style={{ fontSize: "13px", fontWeight: 500, textDecoration: "none", color: "inherit" }}>
+              <UserPlus className="w-4 h-4" /> Gán / Thu hồi License
+            </Link>
             <button onClick={() => toast.info("Xuất Excel danh sách license đang sử dụng")}
-              className="flex items-center gap-1.5 px-3 py-2 bg-[#2563eb] text-white rounded-lg hover:opacity-90"
+              className="flex items-center gap-1.5 px-3 py-2 bg-[#990803] text-white rounded-lg hover:opacity-90"
               style={{ fontSize: "13px", fontWeight: 500 }}>
               <Download className="w-4 h-4" /> Xuất Excel
             </button>
@@ -119,11 +121,11 @@ export function SchoolLicensePanel() {
                     {formatRelative(l.expiresAt)}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <button onClick={() => toast.info(`Gán thêm học sinh / giáo viên vào license ${l.licenseKey}`)}
-                      className="p-1.5 hover:bg-secondary rounded" title="Gán thêm">
-                      <UserPlus className="w-4 h-4 text-muted-foreground" />
+                    <button onClick={() => navigate("/school/license-assign")}
+                      className="p-1.5 hover:bg-secondary rounded" title="Gán / Thu hồi License">
+                      <UserPlus className="w-4 h-4 text-[#2563eb]" />
                     </button>
-                    <button onClick={() => toast.info(`Gia hạn license`)}
+                    <button onClick={() => navigate("/school/purchase")}
                       className="p-1.5 hover:bg-secondary rounded ml-1" title="Gia hạn">
                       <RefreshCw className="w-4 h-4 text-muted-foreground" />
                     </button>

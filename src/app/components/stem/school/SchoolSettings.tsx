@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+﻿import { useState, type FormEvent } from "react";
 import {
   Settings2, Bell, Link2, Shield, Save, Building2, Mail, Phone,
   Globe, ChevronRight, CheckCircle2, AlertTriangle, Eye, EyeOff, Users,
@@ -119,6 +119,17 @@ export function SchoolSettings() {
 
   function handleProfileSubmit(e: FormEvent) {
     e.preventDefault();
+    const tenantId = user?.tenantType === "school" ? user.tenantId : "";
+    try {
+      localStorage.setItem(`gstem_school_profile_${tenantId}`, JSON.stringify({
+        officialName: schoolName,
+        principalName,
+        principalEmail,
+        principalPhone,
+        address,
+        website,
+      }));
+    } catch { /* ignore quota errors */ }
     setSaved(true);
     toast.success("Đã lưu thông tin trường");
     setTimeout(() => setSaved(false), 3000);
@@ -130,7 +141,7 @@ export function SchoolSettings() {
         icon={Settings2}
         title="Cài đặt Trường"
         subtitle="Quản lý cấu hình và tùy chỉnh cho trường học."
-        accentColor="#2563eb"
+        accentColor="#990803"
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-5 items-start">

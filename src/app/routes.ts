@@ -6,10 +6,14 @@ import { Login } from "./components/Login";
 import { NotFound } from "./components/NotFound";
 import { ComingSoon } from "./components/stem/ComingSoon";
 
+// === Module Selector (portal page after login) =======================
+import { ModuleSelector } from "./components/ModuleSelector";
+
 // === Component cũ dùng lại ===========================================
 import { UserProfile } from "./components/UserProfile";
 import { Settings } from "./components/Settings";
 import { Notifications } from "./components/Notifications";
+import { Messaging } from "./components/Messaging";
 import { Announcements } from "./components/Announcements";
 import { Dashboard as LegacyDashboard } from "./components/Dashboard";
 import { Quizzes as LegacyQuizzes } from "./components/Quizzes";
@@ -90,29 +94,55 @@ import { TeacherGrading } from "./components/stem/teacher/TeacherGrading";
 import { TeacherClasses } from "./components/stem/teacher/TeacherClasses";
 
 // === Student — Phase 4 ===============================================
+import { StudentLMSDesign } from "./components/stem/student/StudentLMSDesign";
 import { StudentHome } from "./components/stem/student/StudentHome";
 import { StudentScheduleViewer } from "./components/stem/student/StudentScheduleViewer";
 import { StudentLessonPlayer } from "./components/stem/student/StudentLessonPlayer";
 import { STEMExamParticipation } from "./components/stem/student/STEMExamParticipation";
 import { StudentAchievements } from "./components/stem/student/StudentAchievements";
 import { StudentCertificates } from "./components/stem/student/StudentCertificates";
+import StudentCourseList from "./components/stem/student/StudentCourseList";
+import StudentCourseDetail from "./components/stem/student/StudentCourseDetail";
+import THLessonPlayer from "./components/stem/student/THLessonPlayer";
+import STEMChallengeDetail from "./components/stem/student/STEMChallengeDetail";
+import StudentExercises from "./components/stem/student/StudentExercises";
+import StudentSubmitProduct from "./components/stem/student/StudentSubmitProduct";
+import StudentNotebook from "./components/stem/student/StudentNotebook";
+import StudentForum from "./components/stem/student/StudentForum";
+import StudentPortfolio from "./components/stem/student/StudentPortfolio";
 
 // === Authority — Phase 5 =============================================
 import { RegionalEducationDashboard } from "./components/stem/authority/RegionalEducationDashboard";
 import { SchoolDirectory } from "./components/stem/authority/SchoolDirectory";
+import { AuthoritySchoolDetail } from "./components/stem/authority/AuthoritySchoolDetail";
 import { EquipmentComplianceMonitor } from "./components/stem/authority/EquipmentComplianceMonitor";
 import { ProcurementCostAnalytics } from "./components/stem/authority/ProcurementCostAnalytics";
 import { NationalDataSync } from "./components/stem/authority/NationalDataSync";
 import { CommonCatalogManager } from "./components/stem/authority/CommonCatalogManager";
 import { MinistryReportExporter } from "./components/stem/authority/MinistryReportExporter";
+import { AuthorityReportTT38 } from "./components/stem/authority/AuthorityReportTT38";
+import { AuthorityReportCV1014 } from "./components/stem/authority/AuthorityReportCV1014";
+import { AuthorityReportBuilder } from "./components/stem/authority/AuthorityReportBuilder";
+import { AdvancedAnalytics } from "./components/stem/authority/AdvancedAnalytics";
+import { ProvinceExamMonitor } from "./components/stem/authority/ProvinceExamMonitor";
+import { ProvinceLicenseOverview } from "./components/stem/authority/ProvinceLicenseOverview";
+import { AuthorityProgramViewer } from "./components/stem/authority/AuthorityProgramViewer";
+import { AuthorityContentReview } from "./components/stem/authority/AuthorityContentReview";
+import { AuthorityLearningResults } from "./components/stem/authority/AuthorityLearningResults";
+import { AuthorityEvents } from "./components/stem/authority/AuthorityEvents";
+import { AuthorityNews } from "./components/stem/authority/AuthorityNews";
+import { AuthoritySettings } from "./components/stem/authority/AuthoritySettings";
 
 // === AI-Buddy — Phase 7 ==============================================
 import { AIBuddyPanel } from "./components/stem/ai/AIBuddyPanel";
 
 // === Admin (System) — Phase 6 ========================================
 import { AdminDashboard } from "./components/stem/admin/AdminDashboard";
-import { TenantManagementAdmin } from "./components/stem/admin/TenantManagement";
-import { TenantOnboarding } from "./components/stem/admin/TenantOnboarding";
+import { OrganizationManagement } from "./components/stem/admin/OrganizationManagement";
+import { OrganizationDetail } from "./components/stem/admin/OrganizationDetail";
+import { OrgTree } from "./components/stem/admin/OrgTree";
+import { AccountList } from "./components/stem/admin/AccountList";
+import { AccountDetail } from "./components/stem/admin/AccountDetail";
 import { LicenseMonitoring } from "./components/stem/admin/LicenseMonitoring";
 import { DevPortal } from "./components/stem/admin/DevPortal";
 import { DataLakeCenter } from "./components/stem/admin/DataLakeCenter";
@@ -123,6 +153,14 @@ import { AuditLogAdmin } from "./components/stem/admin/AuditLog";
 import { CrossTenantAccessLog } from "./components/stem/admin/CrossTenantAccessLog";
 import { UserManagementAdmin } from "./components/stem/admin/UserManagementAdmin";
 import { RolesPermissionsAdmin } from "./components/stem/admin/RolesPermissionsAdmin";
+import { SupplierManagement as AdminSupplierManagement } from "./components/stem/admin/SupplierManagement";
+import { SupplierDetail as AdminSupplierDetail } from "./components/stem/admin/SupplierDetail";
+import { MasterDataAdmin } from "./components/stem/admin/MasterDataAdmin";
+import { EducationLevelAdmin } from "./components/stem/admin/EducationLevelAdmin";
+import { SubjectAdmin } from "./components/stem/admin/SubjectAdmin";
+import { TextbookAdmin } from "./components/stem/admin/TextbookAdmin";
+import { GradeAdmin } from "./components/stem/admin/GradeAdmin";
+import { MiscAdmin } from "./components/stem/admin/MiscAdmin";
 
 // === PUBLIC LAYER (V1, no auth) ======================================
 import { PublicLayout } from "./components/public/layout/PublicLayout";
@@ -219,6 +257,7 @@ export const router = createBrowserRouter([
     path: "/",
     Component: AuthGuard,
     children: [
+      { path: "modules", Component: ModuleSelector },
       {
         Component: Layout,
         children: [
@@ -294,12 +333,25 @@ export const router = createBrowserRouter([
           /* ============ AUTHORITY ============ */
           { path: "authority/dashboard",              Component: RegionalEducationDashboard },
           { path: "authority/schools",                Component: SchoolDirectory },
+          { path: "authority/schools/:schoolId",      Component: AuthoritySchoolDetail },
           { path: "authority/equipment-compliance",   Component: EquipmentComplianceMonitor },
           { path: "authority/procurement",            Component: ProcurementCostAnalytics },
+          { path: "authority/reports/procurement",    Component: ProcurementCostAnalytics },
           { path: "authority/data-sync",              Component: NationalDataSync },
           { path: "authority/catalogs",               Component: CommonCatalogManager },
           { path: "authority/reports",                Component: MinistryReportExporter },
-          { path: "authority/analytics",              Component: RegionalEducationDashboard },
+          { path: "authority/reports/tt38",           Component: AuthorityReportTT38 },
+          { path: "authority/reports/cv1014",         Component: AuthorityReportCV1014 },
+          { path: "authority/reports/builder",        Component: AuthorityReportBuilder },
+          { path: "authority/analytics",              Component: AdvancedAnalytics },
+          { path: "authority/exam-monitor",           Component: ProvinceExamMonitor },
+          { path: "authority/licenses",               Component: ProvinceLicenseOverview },
+          { path: "authority/programs",               Component: AuthorityProgramViewer },
+          { path: "authority/content-review",         Component: AuthorityContentReview },
+          { path: "authority/learning-results",       Component: AuthorityLearningResults },
+          { path: "authority/events",                 Component: AuthorityEvents },
+          { path: "authority/news",                   Component: AuthorityNews },
+          { path: "authority/settings",               Component: AuthoritySettings },
 
           /* ============ TEACHER ============ */
           { path: "teacher/dashboard",                Component: TeacherDashboard },
@@ -314,19 +366,42 @@ export const router = createBrowserRouter([
           { path: "teacher/equipment-check",          Component: ClassroomEquipmentCheck },
 
           /* ============ STUDENT ============ */
+          { path: "student/lms-design",               Component: StudentLMSDesign },
           { path: "student/dashboard",                Component: StudentHome },
           { path: "student/schedule",                 Component: StudentScheduleViewer },
+          { path: "student/courses",                  Component: StudentCourseList },
+          { path: "student/courses/:id",              Component: StudentCourseDetail },
           { path: "student/lessons",                  Component: StudentLessonPlayer },
+          { path: "student/lessons/:courseId/:lessonId", Component: THLessonPlayer },
+          { path: "student/challenge",                Component: STEMChallengeDetail },
+          { path: "student/exercises",                Component: StudentExercises },
+          { path: "student/submit",                   Component: StudentSubmitProduct },
+          { path: "student/notebook",                 Component: StudentNotebook },
+          { path: "student/forum",                    Component: StudentForum },
           { path: "student/exams",                    Component: STEMExamParticipation },
           { path: "student/achievements",             Component: StudentAchievements },
           { path: "student/certificates",             Component: StudentCertificates },
+          { path: "student/portfolio",                Component: StudentPortfolio },
 
           /* ============ ADMIN (System) ============ */
           { path: "admin/dashboard",                  Component: AdminDashboard },
-          { path: "admin/tenants",                    Component: TenantManagementAdmin },
-          { path: "admin/tenant-onboarding",          Component: TenantOnboarding },
+          { path: "admin/organizations",              Component: OrganizationManagement },
+          { path: "admin/organizations/tree",         Component: OrgTree },
+          { path: "admin/organizations/:id",          Component: OrganizationDetail },
+          { path: "admin/suppliers",                  Component: AdminSupplierManagement },
+          { path: "admin/suppliers/content",          Component: AdminSupplierManagement },
+          { path: "admin/suppliers/violations",       Component: AdminSupplierManagement },
+          { path: "admin/suppliers/:id",              Component: AdminSupplierDetail },
+          { path: "admin/accounts",                   Component: AccountList },
+          { path: "admin/accounts/:id",               Component: AccountDetail },
           { path: "admin/users",                      Component: UserManagementAdmin },
           { path: "admin/roles",                      Component: RolesPermissionsAdmin },
+          { path: "admin/master-data/levels",         Component: EducationLevelAdmin },
+          { path: "admin/master-data/grades",         Component: GradeAdmin },
+          { path: "admin/master-data/subjects",       Component: SubjectAdmin },
+          { path: "admin/master-data/schools",        Component: MasterDataAdmin },
+          { path: "admin/master-data/textbooks",      Component: TextbookAdmin },
+          { path: "admin/master-data/misc",           Component: MiscAdmin },
           { path: "admin/licenses",                   Component: LicenseMonitoring },
           { path: "admin/dev-portal",                 Component: DevPortal },
           { path: "admin/data-lake",                  Component: DataLakeCenter },
@@ -340,6 +415,7 @@ export const router = createBrowserRouter([
           { path: "shared/profile",                   Component: UserProfile },
           { path: "shared/settings",                  Component: Settings },
           { path: "shared/notifications",             Component: Notifications },
+          { path: "shared/messages",                  Component: Messaging },
           { path: "shared/announcements",             Component: Announcements },
           { path: "shared/ai-buddy",                  Component: AIBuddyPanel },
 

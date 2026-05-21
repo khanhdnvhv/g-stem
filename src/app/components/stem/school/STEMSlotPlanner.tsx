@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+﻿import { useState, useMemo } from "react";
 import { Link } from "react-router";
 import {
   Calendar, Plus, Save, Layers, GraduationCap,
@@ -6,10 +6,11 @@ import {
   Info, Clock, ArrowRight,
 } from "lucide-react";
 import {
-  scheduleEntries, classesBySchool, stemRooms, tenantsByType,
+  classesBySchool, stemRooms, tenantsByType,
   basePeriodsBySchool, PERIOD_TIMES, MORNING_PERIODS, AFTERNOON_PERIODS,
   type STEMScheduleEntry, type StemProgram,
 } from "../../mock-data/index";
+import { getStoredEntries, saveEntries } from "../../../lib/schedule-store";
 import { useAuth } from "../../AuthContext";
 import { PageHeader } from "../ui/PageHeader";
 import { KpiCard } from "../ui/KpiCard";
@@ -88,32 +89,76 @@ export function STEMSlotPlanner() {
   const { user } = useAuth();
   const tenantId = user?.tenantType === "school" ? user.tenantId : tenantsByType.school[0].id;
 
-  const stemEntries = scheduleEntries.filter((s) => s.schoolId === tenantId);
   const baseEntries = basePeriodsBySchool(tenantId);
   const classes = classesBySchool(tenantId);
   const rooms = stemRooms.filter((r) => r.schoolId === tenantId);
+
+  /* ── Local mutable state for schedule entries ─────────────── */
+  const [localEntries, setLocalEntries] = useState<STEMScheduleEntry[]>(
+    () => getStoredEntries(tenantId),
+  );
+
+  function updateEntries(updater: (prev: STEMScheduleEntry[]) => STEMScheduleEntry[]) {
+    setLocalEntries((prev) => {
+      const next = updater(prev);
+      saveEntries(tenantId, next);
+      return next;
+    });
+  }
 
   const [activeWeekday, setActiveWeekday] = useState(1);
   const [showAddForm, setShowAddForm] = useState(false);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
 
+  /* ── Edit / Delete dialog state ─────────────────────────────── */
+  const [editEntry, setEditEntry] = useState<STEMScheduleEntry | null>(null);
+  const [editTeacherId, setEditTeacherId] = useState("");
+  const [editRoomId, setEditRoomId] = useState("");
+  const [deleteEntry, setDeleteEntry] = useState<STEMScheduleEntry | null>(null);
+
+  function openEditDialog(entry: STEMScheduleEntry) {
+    setEditEntry(entry);
+    setEditTeacherId(entry.teacherId);
+    setEditRoomId(entry.roomId);
+  }
+  function handleSaveEdit() {
+    if (!editEntry) return;
+    const teacher = STEM_TEACHERS.find((t) => t.id === editTeacherId);
+    const room = rooms.find((r) => r.id === editRoomId);
+    updateEntries((prev) =>
+      prev.map((e) =>
+        e.id === editEntry.id
+          ? { ...e, teacherId: editTeacherId, teacherName: teacher?.name ?? e.teacherName, roomId: editRoomId, roomName: room?.name ?? e.roomName }
+          : e,
+      ),
+    );
+    toast.success(`Đã cập nhật tiết ${editEntry.className} · ${editEntry.programCode} · T${editEntry.period}${teacher ? " → GV: " + teacher.name : ""}${room ? " · Phòng: " + room.name : ""}`);
+    setEditEntry(null);
+  }
+  function handleConfirmDelete() {
+    if (!deleteEntry) return;
+    updateEntries((prev) => prev.filter((e) => e.id !== deleteEntry.id));
+    toast.success(`Đã xóa tiết ${deleteEntry.className} · ${deleteEntry.programCode} · T${deleteEntry.period}`);
+    setDeleteEntry(null);
+  }
+
   const daySchedule = useMemo(
-    () => stemEntries
+    () => localEntries
       .filter((s) => s.weekday === activeWeekday && s.programCode !== "CT5")
       .sort((a, b) => a.period - b.period),
-    [stemEntries, activeWeekday],
+    [localEntries, activeWeekday],
   );
 
   /* ── Per-day counts for weekday selector ───────────────────── */
   const dayCounts = WEEKDAY_LABELS.map((_, i) =>
-    stemEntries.filter((s) => s.weekday === i + 1 && s.programCode !== "CT5").length,
+    localEntries.filter((s) => s.weekday === i + 1 && s.programCode !== "CT5").length,
   );
 
   /* ── KPIs ───────────────────────────────────────────────────── */
-  const totalWeekly = stemEntries.filter((s) => s.programCode !== "CT5").length;
-  const classesWithStem = new Set(stemEntries.filter(s => s.programCode !== "CT5").map((s) => s.classId)).size;
-  const roomsInUse = new Set(stemEntries.map((s) => s.roomId)).size;
-  const teachersAssigned = new Set(stemEntries.map((s) => s.teacherId)).size;
+  const totalWeekly = localEntries.filter((s) => s.programCode !== "CT5").length;
+  const classesWithStem = new Set(localEntries.filter(s => s.programCode !== "CT5").map((s) => s.classId)).size;
+  const roomsInUse = new Set(localEntries.map((s) => s.roomId)).size;
+  const teachersAssigned = new Set(localEntries.map((s) => s.teacherId)).size;
 
   /* ── Conflict detection ─────────────────────────────────────── */
   // 1. Room conflicts: same room + same period on same weekday
@@ -183,9 +228,28 @@ export function STEMSlotPlanner() {
 
   function handleSubmit() {
     if (!formValid) return;
-    toast.success(
-      `Đã thêm tiết ${form.program} · ${classes.find((c) => c.id === form.classId)?.name} · Tiết ${form.period} · ${selectedRoom?.name}`,
-    );
+    const cls = classes.find((c) => c.id === form.classId);
+    const teacher = STEM_TEACHERS.find((t) => t.id === form.teacherId);
+    const room = selectedRoom;
+    const today = new Date().toISOString().split("T")[0];
+    const newEntry: STEMScheduleEntry = {
+      id: `SE-NEW-${Date.now()}`,
+      schoolId: tenantId,
+      classId: form.classId,
+      className: cls?.name ?? form.classId,
+      weekday: activeWeekday,
+      period: form.period,
+      programCode: form.program as StemProgram,
+      teacherId: form.teacherId,
+      teacherName: teacher?.name ?? form.teacherId,
+      roomId: form.roomId,
+      roomName: room?.name ?? form.roomId,
+      subject: "STEM",
+      dateFrom: today,
+      dateTo: today,
+    };
+    updateEntries((prev) => [...prev, newEntry]);
+    toast.success(`Đã thêm tiết ${form.program} · ${cls?.name} · T${form.period} · ${room?.name}`);
     setForm(EMPTY_FORM);
     setShowAddForm(false);
   }
@@ -200,7 +264,7 @@ export function STEMSlotPlanner() {
         icon={Calendar}
         title="Xếp tiết STEM"
         subtitle="Phân công tiết STEM theo đúng loại chương trình và tầng phòng. CT5 dùng Booking phòng."
-        accentColor="#2563eb"
+        accentColor="#990803"
         actions={
           <>
             <button
@@ -212,7 +276,7 @@ export function STEMSlotPlanner() {
             </button>
             <button
               onClick={() => { setShowAddForm(true); setForm(EMPTY_FORM); }}
-              className="flex items-center gap-1.5 px-3 py-2 bg-[#2563eb] text-white rounded-lg hover:opacity-90"
+              className="flex items-center gap-1.5 px-3 py-2 bg-[#990803] text-white rounded-lg hover:opacity-90"
               style={{ fontSize: "13px", fontWeight: 500 }}
             >
               <Plus className="w-4 h-4" /> Thêm tiết
@@ -294,6 +358,8 @@ export function STEMSlotPlanner() {
           roomConflicts={roomConflicts}
           baseConflicts={baseConflicts}
           emptyLabel="Chưa có tiết CT1/CT2 sáng nào"
+          onEdit={openEditDialog}
+          onDelete={setDeleteEntry}
         />
 
         {/* Afternoon section */}
@@ -307,6 +373,8 @@ export function STEMSlotPlanner() {
           roomConflicts={roomConflicts}
           baseConflicts={baseConflicts}
           emptyLabel="Chưa có tiết CT3/CT4 chiều nào"
+          onEdit={openEditDialog}
+          onDelete={setDeleteEntry}
         />
       </div>
 
@@ -327,215 +395,326 @@ export function STEMSlotPlanner() {
         </div>
       )}
 
-      {/* Add form panel */}
-      {showAddForm && (
-        <div className="bg-card border-2 border-[#2563eb]/40 rounded-2xl p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-foreground">Thêm tiết STEM mới — {WEEKDAY_LABELS[activeWeekday - 1]}</h3>
-            <button
-              onClick={() => { setShowAddForm(false); setForm(EMPTY_FORM); }}
-              className="p-1 rounded hover:bg-secondary"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="space-y-4">
-            {/* Step 1: Choose program */}
-            <div>
-              <label className="block text-sm font-semibold text-foreground mb-2">
-                1. Chọn Chương trình STEM
-              </label>
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                {(["CT1", "CT2", "CT3", "CT4", "CT5"] as StemProgram[]).map((ct) => {
-                  const isCT5 = ct === "CT5";
-                  const isDisabledByRoom = form.roomId && !roomAllowedCTs.includes(ct) && !isCT5;
-                  const isSelected = form.program === ct;
-                  return (
-                    <button
-                      key={ct}
-                      onClick={() => {
-                        if (isCT5) { toast.info("CT5 không xếp TKB — hãy dùng Booking phòng"); return; }
-                        if (isDisabledByRoom) { toast.warning(`Phòng ${selectedRoom?.tier} không hỗ trợ ${ct} (BR-02)`); return; }
-                        setForm((f) => ({ ...f, program: ct, period: 0 }));
-                      }}
-                      className="flex flex-col items-center gap-1 p-2.5 rounded-xl border transition-all"
-                      style={{
-                        borderColor: isSelected ? CT_TYPE_COLOR[ct] : "var(--border)",
-                        background: isSelected ? CT_TYPE_COLOR[ct] + "15" : "var(--background)",
-                        opacity: (isCT5 || isDisabledByRoom) ? 0.45 : 1,
-                        cursor: (isCT5 || isDisabledByRoom) ? "not-allowed" : "pointer",
-                      }}
-                    >
-                      <ProgramBadge code={ct} size="sm" />
-                      <span className="text-center" style={{ fontSize: "9.5px", color: "var(--muted-foreground)", lineHeight: 1.3 }}>
-                        {isCT5 ? "Booking phòng" : CT_SLOT_LABEL[ct].split("·")[0].trim()}
-                      </span>
-                    </button>
-                  );
-                })}
+      {/* ── Edit Dialog ── */}
+      {editEntry && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setEditEntry(null); }}
+        >
+          <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+              <div className="flex items-center gap-2">
+                <Edit2 className="w-4 h-4 text-[#2563eb]" />
+                <h3 style={{ fontSize: "15px", fontWeight: 700 }}>
+                  Chỉnh sửa tiết — {editEntry.className} · {editEntry.programCode} · T{editEntry.period}
+                </h3>
               </div>
+              <button onClick={() => setEditEntry(null)} className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-secondary">
+                <X className="w-4 h-4 text-muted-foreground" />
+              </button>
+            </div>
+            <div className="px-5 py-4 space-y-4">
+              <div className="p-3 bg-secondary/40 rounded-lg text-xs text-muted-foreground space-y-1">
+                <p><span className="font-semibold text-foreground">Lớp:</span> {editEntry.className}</p>
+                <p><span className="font-semibold text-foreground">Chương trình:</span> {editEntry.programCode}</p>
+                <p><span className="font-semibold text-foreground">Thứ / Tiết:</span> {WEEKDAY_LABELS[editEntry.weekday - 1]} · T{editEntry.period} ({PERIOD_TIMES[editEntry.period]})</p>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-foreground" style={{ fontSize: "12.5px", fontWeight: 600 }}>Giáo viên STEM</label>
+                <select
+                  value={editTeacherId}
+                  onChange={(e) => setEditTeacherId(e.target.value)}
+                  className="w-full px-3 py-2 bg-background border border-border rounded-lg outline-none focus:border-[#990803] text-sm"
+                >
+                  {STEM_TEACHERS.map((t) => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-foreground" style={{ fontSize: "12.5px", fontWeight: 600 }}>Phòng STEM</label>
+                <select
+                  value={editRoomId}
+                  onChange={(e) => setEditRoomId(e.target.value)}
+                  className="w-full px-3 py-2 bg-background border border-border rounded-lg outline-none focus:border-[#990803] text-sm"
+                >
+                  {rooms.filter((r) => r.status === "active").map((r) => (
+                    <option key={r.id} value={r.id}>{r.name} ({r.tier})</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-border bg-secondary/20">
+              <button onClick={() => setEditEntry(null)} className="px-4 py-2 border border-border rounded-lg hover:bg-secondary text-sm">Huỷ</button>
+              <button
+                onClick={handleSaveEdit}
+                className="px-4 py-2 bg-[#990803] text-white rounded-lg hover:opacity-90 text-sm font-semibold"
+              >
+                Lưu thay đổi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Delete Confirm Dialog ── */}
+      {deleteEntry && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setDeleteEntry(null); }}
+        >
+          <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+            <div className="px-5 py-4 border-b border-border flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-red-500" />
+              <h3 style={{ fontSize: "15px", fontWeight: 700 }}>Xóa tiết STEM</h3>
+            </div>
+            <div className="px-5 py-4">
+              <p className="text-foreground" style={{ fontSize: "13.5px" }}>
+                Bạn có chắc muốn xóa tiết này?
+              </p>
+              <div className="mt-3 p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 rounded-lg space-y-1" style={{ fontSize: "12px" }}>
+                <p><span className="font-semibold">Lớp:</span> {deleteEntry.className}</p>
+                <p><span className="font-semibold">CT:</span> {deleteEntry.programCode} · T{deleteEntry.period} ({PERIOD_TIMES[deleteEntry.period]})</p>
+                <p><span className="font-semibold">GV:</span> {deleteEntry.teacherName} · Phòng: {deleteEntry.roomName}</p>
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-border bg-secondary/20">
+              <button onClick={() => setDeleteEntry(null)} className="px-4 py-2 border border-border rounded-lg hover:bg-secondary text-sm">Huỷ</button>
+              <button
+                onClick={handleConfirmDelete}
+                className="px-4 py-2 text-white rounded-lg hover:opacity-90 text-sm font-semibold"
+                style={{ backgroundColor: "#990803" }}
+              >
+                Xóa tiết này
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Add Slot Modal ── */}
+      {showAddForm && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center overflow-y-auto py-8 px-4"
+          onClick={(e) => { if (e.target === e.currentTarget) { setShowAddForm(false); setForm(EMPTY_FORM); } }}
+        >
+          <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+              <div className="flex items-center gap-2">
+                <Plus className="w-4 h-4 text-[#2563eb]" />
+                <h3 style={{ fontSize: "15px", fontWeight: 700 }} className="text-foreground">
+                  Thêm tiết STEM mới — {WEEKDAY_LABELS[activeWeekday - 1]}
+                </h3>
+              </div>
+              <button
+                onClick={() => { setShowAddForm(false); setForm(EMPTY_FORM); }}
+                className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors"
+              >
+                <X className="w-4 h-4 text-muted-foreground" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="px-5 py-4 space-y-5">
+              {/* Step 1: Choose program */}
+              <div>
+                <label className="block text-sm font-semibold text-foreground mb-2">
+                  1. Chọn Chương trình STEM
+                </label>
+                <div className="grid grid-cols-5 gap-2">
+                  {(["CT1", "CT2", "CT3", "CT4", "CT5"] as StemProgram[]).map((ct) => {
+                    const isCT5 = ct === "CT5";
+                    const isDisabledByRoom = form.roomId && !roomAllowedCTs.includes(ct) && !isCT5;
+                    const isSelected = form.program === ct;
+                    return (
+                      <button
+                        key={ct}
+                        onClick={() => {
+                          if (isCT5) { toast.info("CT5 không xếp TKB — hãy dùng Booking phòng"); return; }
+                          if (isDisabledByRoom) { toast.warning(`Phòng ${selectedRoom?.tier} không hỗ trợ ${ct} (BR-02)`); return; }
+                          setForm((f) => ({ ...f, program: ct, period: 0 }));
+                        }}
+                        className="flex flex-col items-center gap-1 p-2.5 rounded-xl border transition-all"
+                        style={{
+                          borderColor: isSelected ? CT_TYPE_COLOR[ct] : "var(--border)",
+                          background: isSelected ? CT_TYPE_COLOR[ct] + "15" : "var(--background)",
+                          opacity: (isCT5 || isDisabledByRoom) ? 0.45 : 1,
+                          cursor: (isCT5 || isDisabledByRoom) ? "not-allowed" : "pointer",
+                        }}
+                      >
+                        <ProgramBadge code={ct} size="sm" />
+                        <span className="text-center" style={{ fontSize: "9.5px", color: "var(--muted-foreground)", lineHeight: 1.3 }}>
+                          {isCT5 ? "Booking phòng" : CT_SLOT_LABEL[ct].split("·")[0].trim()}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {form.program && form.program !== "CT5" && (
+                  <p className="mt-1.5 text-xs text-muted-foreground flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    {CT_SLOT_LABEL[form.program as StemProgram]}
+                  </p>
+                )}
+              </div>
+
               {form.program && form.program !== "CT5" && (
-                <p className="mt-1.5 text-xs text-muted-foreground flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  {CT_SLOT_LABEL[form.program as StemProgram]}
-                </p>
+                <>
+                  {/* Step 2: Choose room */}
+                  <div>
+                    <label className="block text-sm font-semibold text-foreground mb-2">
+                      2. Chọn Phòng STEM
+                    </label>
+                    <div className="grid sm:grid-cols-2 gap-2">
+                      {rooms.map((room) => {
+                        const allowed = TIER_ALLOWED_CTS[room.tier] ?? [];
+                        const compatible = allowed.includes(form.program as StemProgram);
+                        const isSelected = form.roomId === room.id;
+                        const tierLabel = room.tier === "advanced" ? "Nâng cao" : room.tier === "basic" ? "Cơ bản" : "Tối thiểu";
+                        const tierColor = room.tier === "advanced" ? "#c8a84e" : room.tier === "basic" ? "#2563eb" : "#6b7280";
+                        return (
+                          <button
+                            key={room.id}
+                            onClick={() => {
+                              if (!compatible) { toast.warning(`${room.name} (${tierLabel}) không hỗ trợ ${form.program} (BR-02)`); return; }
+                              if (room.status !== "active") { toast.error(`${room.name} đang ${room.status === "maintenance" ? "bảo trì" : "không hoạt động"}`); return; }
+                              setForm((f) => ({ ...f, roomId: room.id }));
+                            }}
+                            className="flex items-center justify-between p-2.5 rounded-xl border text-left transition-all"
+                            style={{
+                              borderColor: isSelected ? "#2563eb" : "var(--border)",
+                              background: isSelected ? "#2563eb15" : compatible ? "var(--background)" : "var(--secondary)",
+                              opacity: compatible && room.status === "active" ? 1 : 0.45,
+                              cursor: compatible && room.status === "active" ? "pointer" : "not-allowed",
+                            }}
+                          >
+                            <div>
+                              <div className="font-semibold text-foreground" style={{ fontSize: "12px" }}>{room.name}</div>
+                              <div className="text-muted-foreground" style={{ fontSize: "10px" }}>
+                                {room.capacity} chỗ · {compatible ? `Hỗ trợ ${form.program}` : `Không hỗ trợ ${form.program}`}
+                              </div>
+                            </div>
+                            <span
+                              className="text-xs font-semibold px-1.5 py-0.5 rounded"
+                              style={{ background: tierColor + "20", color: tierColor }}
+                            >
+                              {tierLabel}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Step 3: Period */}
+                  <div>
+                    <label className="block text-sm font-semibold text-foreground mb-2">
+                      3. Chọn Tiết học
+                      <span className="ml-1.5 text-xs text-muted-foreground font-normal">
+                        ({CT_SLOT_LABEL[form.program as StemProgram]})
+                      </span>
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {[1, 2, 3, 4, 5, 6, 7, 8].map((p) => {
+                        const isAllowed = allowedPeriods.includes(p);
+                        const isSelected = form.period === p;
+                        return (
+                          <button
+                            key={p}
+                            onClick={() => {
+                              if (!isAllowed) {
+                                toast.warning(
+                                  `${form.program} chỉ được xếp ${CT_SLOT_LABEL[form.program as StemProgram]} (BR-03)`,
+                                );
+                                return;
+                              }
+                              setForm((f) => ({ ...f, period: p }));
+                            }}
+                            className="flex flex-col items-center px-3 py-2 rounded-lg border transition-all"
+                            style={{
+                              borderColor: isSelected ? "#2563eb" : "var(--border)",
+                              background: isSelected ? "#2563eb" : "var(--background)",
+                              color: isSelected ? "#fff" : "var(--foreground)",
+                              opacity: isAllowed ? 1 : 0.35,
+                              cursor: isAllowed ? "pointer" : "not-allowed",
+                            }}
+                          >
+                            <span style={{ fontSize: "12px", fontWeight: 700 }}>T{p}</span>
+                            <span style={{ fontSize: "9px", opacity: 0.7 }}>{PERIOD_TIMES[p]?.split("–")[0]}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Step 4: Class + Teacher */}
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-semibold text-foreground mb-1.5">4. Lớp học</label>
+                      <select
+                        value={form.classId}
+                        onChange={(e) => setForm((f) => ({ ...f, classId: e.target.value }))}
+                        className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-[#990803]/30"
+                      >
+                        <option value="">Chọn lớp</option>
+                        {classes.map((c) => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-foreground mb-1.5">5. Giáo viên STEM</label>
+                      <select
+                        value={form.teacherId}
+                        onChange={(e) => setForm((f) => ({ ...f, teacherId: e.target.value }))}
+                        className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-[#990803]/30"
+                      >
+                        <option value="">Chọn giáo viên</option>
+                        {STEM_TEACHERS.map((t) => (
+                          <option key={t.id} value={t.id}>{t.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Conflict warning for new entry */}
+                  {newEntryConflict && (
+                    <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/20">
+                      <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                      <p className="text-xs text-amber-700">{newEntryConflict}</p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
-            {form.program && form.program !== "CT5" && (
-              <>
-                {/* Step 2: Choose room */}
-                <div>
-                  <label className="block text-sm font-semibold text-foreground mb-2">
-                    2. Chọn Phòng STEM
-                  </label>
-                  <div className="grid sm:grid-cols-2 gap-2">
-                    {rooms.map((room) => {
-                      const allowed = TIER_ALLOWED_CTS[room.tier] ?? [];
-                      const compatible = allowed.includes(form.program as StemProgram);
-                      const isSelected = form.roomId === room.id;
-                      const tierLabel = room.tier === "advanced" ? "Nâng cao" : room.tier === "basic" ? "Cơ bản" : "Tối thiểu";
-                      const tierColor = room.tier === "advanced" ? "#c8a84e" : room.tier === "basic" ? "#2563eb" : "#6b7280";
-                      return (
-                        <button
-                          key={room.id}
-                          onClick={() => {
-                            if (!compatible) { toast.warning(`${room.name} (${tierLabel}) không hỗ trợ ${form.program} (BR-02)`); return; }
-                            if (room.status !== "active") { toast.error(`${room.name} đang ${room.status === "maintenance" ? "bảo trì" : "không hoạt động"}`); return; }
-                            setForm((f) => ({ ...f, roomId: room.id }));
-                          }}
-                          className="flex items-center justify-between p-2.5 rounded-xl border text-left transition-all"
-                          style={{
-                            borderColor: isSelected ? "#2563eb" : "var(--border)",
-                            background: isSelected ? "#2563eb15" : compatible ? "var(--background)" : "var(--secondary)",
-                            opacity: compatible && room.status === "active" ? 1 : 0.45,
-                            cursor: compatible && room.status === "active" ? "pointer" : "not-allowed",
-                          }}
-                        >
-                          <div>
-                            <div className="font-semibold text-foreground" style={{ fontSize: "12px" }}>{room.name}</div>
-                            <div className="text-muted-foreground" style={{ fontSize: "10px" }}>
-                              {room.capacity} chỗ · {compatible ? `Hỗ trợ ${form.program}` : `Không hỗ trợ ${form.program}`}
-                            </div>
-                          </div>
-                          <span
-                            className="text-xs font-semibold px-1.5 py-0.5 rounded"
-                            style={{ background: tierColor + "20", color: tierColor }}
-                          >
-                            {tierLabel}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Step 3: Period */}
-                <div>
-                  <label className="block text-sm font-semibold text-foreground mb-2">
-                    3. Chọn Tiết học
-                    <span className="ml-1.5 text-xs text-muted-foreground font-normal">
-                      ({CT_SLOT_LABEL[form.program as StemProgram]})
-                    </span>
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {[1, 2, 3, 4, 5, 6, 7, 8].map((p) => {
-                      const isAllowed = allowedPeriods.includes(p);
-                      const isSelected = form.period === p;
-                      return (
-                        <button
-                          key={p}
-                          onClick={() => {
-                            if (!isAllowed) {
-                              toast.warning(
-                                `${form.program} chỉ được xếp ${CT_SLOT_LABEL[form.program as StemProgram]} (BR-03)`,
-                              );
-                              return;
-                            }
-                            setForm((f) => ({ ...f, period: p }));
-                          }}
-                          className="flex flex-col items-center px-3 py-2 rounded-lg border transition-all"
-                          style={{
-                            borderColor: isSelected ? "#2563eb" : isAllowed ? "var(--border)" : "var(--border)",
-                            background: isSelected ? "#2563eb" : "var(--background)",
-                            color: isSelected ? "#fff" : "var(--foreground)",
-                            opacity: isAllowed ? 1 : 0.35,
-                            cursor: isAllowed ? "pointer" : "not-allowed",
-                          }}
-                        >
-                          <span style={{ fontSize: "12px", fontWeight: 700 }}>T{p}</span>
-                          <span style={{ fontSize: "9px", opacity: 0.7 }}>{PERIOD_TIMES[p]?.split("–")[0]}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Step 4: Class + Teacher */}
-                <div className="grid sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-sm font-semibold text-foreground mb-1.5">4. Lớp học</label>
-                    <select
-                      value={form.classId}
-                      onChange={(e) => setForm((f) => ({ ...f, classId: e.target.value }))}
-                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30"
-                    >
-                      <option value="">Chọn lớp</option>
-                      {classes.map((c) => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-foreground mb-1.5">5. Giáo viên STEM</label>
-                    <select
-                      value={form.teacherId}
-                      onChange={(e) => setForm((f) => ({ ...f, teacherId: e.target.value }))}
-                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30"
-                    >
-                      <option value="">Chọn giáo viên</option>
-                      {STEM_TEACHERS.map((t) => (
-                        <option key={t.id} value={t.id}>{t.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Conflict warning for new entry */}
-                {newEntryConflict && (
-                  <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/20">
-                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                    <p className="text-xs text-amber-700">{newEntryConflict}</p>
-                  </div>
-                )}
-
-                {/* Submit */}
-                <div className="flex items-center gap-3 pt-1">
-                  <button
-                    onClick={handleSubmit}
-                    disabled={!formValid}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-opacity"
-                    style={{
-                      background: "#2563eb",
-                      opacity: formValid ? 1 : 0.45,
-                      cursor: formValid ? "pointer" : "not-allowed",
-                    }}
-                  >
-                    <CheckCircle2 className="w-4 h-4" /> Thêm tiết STEM
-                  </button>
-                  <button
-                    onClick={() => { setShowAddForm(false); setForm(EMPTY_FORM); }}
-                    className="px-4 py-2 rounded-lg text-sm border border-border text-foreground hover:bg-secondary"
-                  >
-                    Hủy
-                  </button>
-                  {!formValid && (
-                    <span className="text-xs text-muted-foreground">Điền đủ thông tin ở trên</span>
-                  )}
-                </div>
-              </>
-            )}
+            {/* Modal Footer */}
+            <div className="flex items-center justify-between px-5 py-4 border-t border-border bg-secondary/20">
+              <span className="text-xs text-muted-foreground">
+                {!formValid && form.program && form.program !== "CT5" ? "Điền đủ thông tin ở trên" : ""}
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => { setShowAddForm(false); setForm(EMPTY_FORM); }}
+                  className="px-4 py-2 rounded-lg text-sm border border-border text-foreground hover:bg-secondary"
+                >
+                  Hủy
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  disabled={!formValid}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-opacity"
+                  style={{
+                    background: "#990803",
+                    opacity: formValid ? 1 : 0.45,
+                    cursor: formValid ? "pointer" : "not-allowed",
+                  }}
+                >
+                  <CheckCircle2 className="w-4 h-4" /> Thêm tiết STEM
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -549,11 +728,15 @@ function ScheduleTable({
   roomConflicts,
   baseConflicts,
   emptyLabel,
+  onEdit,
+  onDelete,
 }: {
   entries: STEMScheduleEntry[];
   roomConflicts: Set<string>;
   baseConflicts: Set<string>;
   emptyLabel: string;
+  onEdit: (entry: STEMScheduleEntry) => void;
+  onDelete: (entry: STEMScheduleEntry) => void;
 }) {
   if (entries.length === 0) {
     return (
@@ -614,16 +797,18 @@ function ScheduleTable({
                 <td className="px-3 py-2">
                   <div className="flex items-center gap-1">
                     <button
-                      onClick={() => toast.info(`Chỉnh sửa tiết ${e.className} · ${e.programCode} · T${e.period}`)}
+                      onClick={() => onEdit(e)}
                       className="p-1 rounded hover:bg-secondary"
+                      title="Chỉnh sửa"
                     >
                       <Edit2 className="w-3.5 h-3.5 text-muted-foreground" />
                     </button>
                     <button
-                      onClick={() => toast.error(`Đã xóa tiết ${e.className} · ${e.programCode} · T${e.period}`)}
-                      className="p-1 rounded hover:bg-secondary"
+                      onClick={() => onDelete(e)}
+                      className="p-1 rounded hover:bg-red-50 dark:hover:bg-red-950/30"
+                      title="Xóa tiết"
                     >
-                      <Trash2 className="w-3.5 h-3.5 text-muted-foreground" />
+                      <Trash2 className="w-3.5 h-3.5 text-red-500" />
                     </button>
                   </div>
                 </td>

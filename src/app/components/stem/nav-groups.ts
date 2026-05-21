@@ -9,6 +9,8 @@ import {
   ScrollText, Shield, Server, Plug, Cpu, Lightbulb,
   FlaskConical, Video, Factory, ClipboardList, Atom,
   Building2, BookMarked, DoorOpen, PieChart, HardDrive,
+  MessagesSquare, Trophy,
+  ShieldCheck, CalendarDays, Newspaper, Microscope,
   type LucideIcon,
 } from "lucide-react";
 import type { StemRole } from "../AuthContext";
@@ -336,33 +338,84 @@ const SCHOOL_ITADMIN_NAV: NavGroup[] = [
   SHARED_PERSONAL,
 ];
 
-const AUTHORITY_NAV: NavGroup[] = [
+const AUTHORITY_ADMIN_NAV: NavGroup[] = [
   {
     title: "Tổng quan",
     items: [
       { to: "/authority/dashboard", icon: LayoutDashboard, label: "Dashboard Toàn ngành" },
-      { to: "/authority/schools", icon: School, label: "Danh bạ Trường" },
+      { to: "/authority/schools",   icon: School,          label: "Danh bạ Trường" },
     ],
   },
   {
     title: "Thiết bị & CSVC",
     items: [
       { to: "/authority/equipment-compliance", icon: ClipboardCheck, label: "Tình trạng & Chuẩn" },
-      { to: "/authority/procurement", icon: TrendingUp, label: "Chi phí Mua sắm" },
+      { to: "/authority/reports/procurement",  icon: TrendingUp,     label: "Chi phí Mua sắm" },
+    ],
+  },
+  {
+    title: "Đào tạo & Khảo thí",
+    items: [
+      { to: "/authority/programs",         icon: BookOpen,      label: "Chương trình CT1–CT5" },
+      { to: "/authority/content-review",   icon: ShieldCheck,   label: "Kiểm duyệt Học liệu" },
+      { to: "/authority/exam-monitor",     icon: ClipboardList, label: "Giám sát Kỳ thi STEM" },
+      { to: "/authority/learning-results", icon: GraduationCap, label: "Kết quả Học tập" },
+      { to: "/authority/licenses",         icon: KeyRound,      label: "License & Tài khoản" },
+    ],
+  },
+  {
+    title: "Cộng đồng",
+    items: [
+      { to: "/authority/events", icon: CalendarDays, label: "Sự kiện Giáo dục" },
+      { to: "/authority/news",   icon: Newspaper,    label: "Tin tức & Xu hướng" },
     ],
   },
   {
     title: "Dữ liệu & Liên thông",
     items: [
       { to: "/authority/data-sync", icon: Network, label: "CSDL Quốc gia & VNeID" },
-      { to: "/authority/catalogs", icon: Layers, label: "Danh mục dùng chung" },
+      { to: "/authority/catalogs",  icon: Layers,  label: "Danh mục dùng chung" },
     ],
   },
   {
     title: "Báo cáo",
     items: [
-      { to: "/authority/reports", icon: FileText, label: "Báo cáo Bộ GD&ĐT" },
+      { to: "/authority/reports",   icon: FileText,  label: "Báo cáo Bộ GD&ĐT" },
       { to: "/authority/analytics", icon: BarChart3, label: "Analytics Nâng cao" },
+    ],
+  },
+  SHARED_PERSONAL,
+];
+
+const AUTHORITY_VIEWER_NAV: NavGroup[] = [
+  {
+    title: "Giám sát & Điều hành",
+    items: [
+      { to: "/authority/dashboard", icon: LayoutDashboard, label: "Tổng quan" },
+      { to: "/authority/schools",   icon: School,          label: "Danh sách Trường học" },
+    ],
+  },
+  {
+    title: "Thiết bị & CSVC",
+    items: [
+      { to: "/authority/equipment-compliance", icon: ClipboardCheck, label: "Tình trạng & Chuẩn" },
+      { to: "/authority/reports/procurement",  icon: TrendingUp,     label: "Chi phí Mua sắm" },
+    ],
+  },
+  {
+    title: "Dữ liệu & Liên thông",
+    items: [
+      { to: "/authority/data-sync", icon: Network, label: "CSDL Quốc gia & VNeID" },
+      { to: "/authority/catalogs",  icon: Layers,  label: "Danh mục dùng chung" },
+    ],
+  },
+  {
+    title: "Báo cáo & Tuân thủ",
+    items: [
+      { to: "/authority/reports/tt38",    icon: FileText,       label: "Báo cáo TT38" },
+      { to: "/authority/reports/cv1014",  icon: ClipboardCheck, label: "Báo cáo CV1014" },
+      { to: "/authority/reports/builder", icon: Microscope,     label: "Báo cáo tùy chỉnh" },
+      { to: "/authority/analytics",       icon: BarChart3,      label: "Phân tích Nâng cao" },
     ],
   },
   SHARED_PERSONAL,
@@ -409,28 +462,22 @@ const TEACHER_NAV: NavGroup[] = [
 const STUDENT_NAV: NavGroup[] = [
   {
     title: "Tổng quan",
-    items: [{ to: "/student/dashboard", icon: LayoutDashboard, label: "Trang chủ của tôi" }],
+    items: [
+      { to: "/student/dashboard", icon: LayoutDashboard, label: "Trang chủ" },
+      { to: "/student/schedule",  icon: Calendar,        label: "Thời khóa biểu" },
+    ],
   },
   {
     title: "Học tập",
     items: [
-      { to: "/student/schedule", icon: Calendar, label: "Thời khóa biểu" },
-      { to: "/student/lessons", icon: BookOpen, label: "Bài giảng STEM" },
-      { to: "/student/exams", icon: ClipboardCheck, label: "Kỳ thi STEM" },
+      { to: "/student/courses",  icon: BookOpen,        label: "Khóa học STEM" },
+      { to: "/student/forum",    icon: MessagesSquare,  label: "Diễn đàn lớp"  },
     ],
   },
   {
     title: "Thành tích",
     items: [
-      { to: "/student/achievements", icon: Atom, label: "Thành tích & AI-Buddy" },
-      { to: "/student/certificates", icon: Award, label: "Chứng chỉ của tôi" },
-    ],
-  },
-  {
-    title: "Cá nhân",
-    items: [
-      { to: "/shared/profile", icon: User, label: "Hồ sơ" },
-      { to: "/shared/notifications", icon: Bell, label: "Thông báo" },
+      { to: "/student/achievements", icon: Trophy, label: "Thành tích & Badge" },
     ],
   },
 ];
@@ -438,41 +485,52 @@ const STUDENT_NAV: NavGroup[] = [
 const ADMIN_NAV: NavGroup[] = [
   {
     title: "Tổng quan",
-    items: [{ to: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard Platform" }],
-  },
-  {
-    title: "Khách thuê & Người dùng",
     items: [
-      { to: "/admin/tenants", icon: Server, label: "Quản lý Tenant" },
-      { to: "/admin/tenant-onboarding", icon: Factory, label: "Onboarding Tenant" },
-      { to: "/admin/users", icon: Users, label: "Người dùng toàn hệ thống" },
-      { to: "/admin/roles", icon: Shield, label: "Vai trò & Phân quyền" },
+      { to: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     ],
   },
   {
-    title: "License",
-    items: [{ to: "/admin/licenses", icon: FileBadge, label: "Giám sát License" }],
-  },
-  {
-    title: "Dữ liệu & Tích hợp",
+    title: "Quản lý Tổ chức",
     items: [
-      { to: "/admin/data-lake", icon: Database, label: "Data Lake (4Đ)" },
-      { to: "/admin/dev-portal", icon: Plug, label: "Dev Portal / API Gateway" },
+      { to: "/admin/organizations",      icon: Building2,    label: "Danh sách tổ chức" },
+      { to: "/admin/organizations/tree", icon: Network,      label: "Cây phân cấp hành chính" },
     ],
   },
   {
-    title: "Bảo mật & Giám sát",
+    title: "Quản lý Nhà Cung Cấp",
     items: [
-      { to: "/admin/security", icon: Shield, label: "Cấu hình Bảo mật" },
-      { to: "/admin/audit", icon: ScrollText, label: "Nhật ký Hệ thống" },
-      { to: "/admin/cross-tenant-log", icon: IdCard, label: "Truy cập chéo" },
-      { to: "/admin/system-health", icon: Activity, label: "System Health" },
+      { to: "/admin/suppliers",         icon: Factory, label: "Danh sách NCC" },
+      { to: "/admin/suppliers/content", icon: Layers,  label: "Giám sát nội dung & Gói STEM" },
     ],
   },
   {
-    title: "Cấu hình Nền tảng",
+    title: "Quản lý Tài khoản",
     items: [
-      { to: "/admin/platform", icon: Settings, label: "Branding / Plugin / OTA" },
+      { to: "/admin/accounts", icon: Users,  label: "Danh sách tài khoản" },
+      { to: "/admin/roles",    icon: Shield, label: "Vai trò & Phân quyền" },
+    ],
+  },
+  {
+    title: "Cấu hình & Thông báo",
+    items: [
+      { to: "/admin/platform",       icon: Settings,  label: "Cấu hình nền tảng" },
+      { to: "/shared/announcements", icon: Megaphone, label: "Thông báo hệ thống" },
+    ],
+  },
+  {
+    title: "Giám sát & Nhật ký",
+    items: [
+      { to: "/admin/audit", icon: ScrollText, label: "Nhật ký kiểm tra" },
+    ],
+  },
+  {
+    title: "Danh mục dùng chung",
+    items: [
+      { to: "/admin/master-data/levels",    icon: GraduationCap, label: "Cấp học" },
+      { to: "/admin/master-data/grades",    icon: Layers,        label: "Khối học" },
+      { to: "/admin/master-data/subjects",  icon: BookOpen,      label: "Môn học" },
+      { to: "/admin/master-data/textbooks", icon: BookMarked,    label: "Sách giáo khoa" },
+      { to: "/admin/master-data/misc",      icon: Boxes,         label: "Danh mục khác" },
     ],
   },
   SHARED_PERSONAL,
@@ -490,8 +548,8 @@ export function getNavGroups(role: StemRole): NavGroup[] {
     case "school_principal":   return SCHOOL_PRINCIPAL_NAV;
     case "school_admin":       return SCHOOL_ADMIN_NAV;
     case "school_itadmin":     return SCHOOL_ITADMIN_NAV;
-    case "authority_admin":    return AUTHORITY_NAV;
-    case "authority_viewer":   return AUTHORITY_NAV;
+    case "authority_admin":    return AUTHORITY_ADMIN_NAV;
+    case "authority_viewer":   return AUTHORITY_VIEWER_NAV;
     case "teacher":            return TEACHER_NAV;
     case "student":            return STUDENT_NAV;
     case "system_admin":       return ADMIN_NAV;

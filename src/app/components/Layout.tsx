@@ -3,7 +3,7 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import {
   LogOut, Bell, Search, Menu, X, Settings as SettingsIcon,
   HelpCircle, PanelLeftClose, PanelLeftOpen, ChevronRight, ChevronDown,
-  Shield, User, Sun, Moon, Atom, GraduationCap,
+  Shield, User, Mail, Sun, Moon, Atom, GraduationCap,
 } from "lucide-react";
 import { mockNotifications } from "./mock-data";
 import { useAuth, roleLabelsMap, tenantTypeLabelsMap } from "./AuthContext";
@@ -14,6 +14,141 @@ import { GlobalSearch } from "./GlobalSearch";
 import { useTheme } from "./ThemeContext";
 import { toast } from "@/app/lib/toast";
 import { getNavGroups } from "./stem/nav-groups";
+import { useGradeLevel, GRADE_LEVEL_META, type GradeLevel } from "./GradeLevelContext";
+
+// ── Emoji map cho student sidebar (Tiểu Học) ─────────────────────────────────
+const STUDENT_NAV_EMOJI: Record<string, string> = {
+  "/student/dashboard":    "🏠",
+  "/student/schedule":     "📅",
+  "/student/courses":      "📚",
+  "/student/exercises":    "✏️",
+  "/student/submit":       "📤",
+  "/student/notebook":     "📓",
+  "/student/forum":        "💬",
+  "/student/achievements": "🏆",
+  "/student/portfolio":    "🔬",
+  "/shared/profile":       "👤",
+  "/shared/notifications": "🔔",
+  "/shared/settings":      "⚙️",
+  "/shared/ai-buddy":      "🤖",
+  "/shared/messages":      "✉️",
+  "/shared/announcements": "📢",
+};
+
+/* ================================================================ */
+/*  STUDENT SIDEBAR — chỉ dùng cho cấp Tiểu Học                     */
+/*  White background, emoji icons, XP stats                         */
+/* ================================================================ */
+function StudentSidebar({
+  collapsed, mobileOpen, onCloseMobile, user, navGroups,
+}: {
+  collapsed: boolean;
+  mobileOpen: boolean;
+  onCloseMobile: () => void;
+  user: { name?: string; initials?: string; tenantName?: string } | null;
+  navGroups: { title: string; items: { to: string; label: string; badge?: string }[] }[];
+}) {
+  const w = mobileOpen ? 260 : collapsed ? 72 : 220;
+  const seen = new Set<string>();
+  const allItems = navGroups.flatMap(g => g.items).filter(item => {
+    if (seen.has(item.to)) return false;
+    seen.add(item.to);
+    return true;
+  });
+
+  return (
+    <aside
+      className={`fixed lg:static inset-y-0 left-0 z-50 lg:z-auto flex flex-col shrink-0 transition-all duration-300 ease-in-out overflow-hidden ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
+      style={{ width: w, top: mobileOpen ? 0 : undefined, background: "#fff", borderRight: "1px solid #e5e7eb" }}
+    >
+      <style>{`
+        .st-item { color: #6b7280; transition: background 0.15s, color 0.15s; }
+        .st-item:hover { background: rgba(153,8,3,0.05) !important; color: #990803 !important; }
+        .st-active { background: rgba(153,8,3,0.08) !important; color: #990803 !important; }
+        .st-item:hover .st-icon { background: rgba(153,8,3,0.08) !important; }
+      `}</style>
+
+      {/* Mobile top bar */}
+      <div className="lg:hidden flex items-center justify-between px-4 h-14 shrink-0" style={{ borderBottom: "1px solid #e5e7eb" }}>
+        <span style={{ fontSize: 15, fontWeight: 800, color: "#990803", letterSpacing: "0.04em" }}>GELEXIMCO <span style={{ color: "#c8a84e" }}>STEM</span></span>
+        <button style={{ color: "#9ca3af" }} onClick={onCloseMobile} className="cursor-pointer p-1 hover:text-[#990803] transition-colors"><X className="w-5 h-5" /></button>
+      </div>
+
+      {/* XP + Streak mini stats */}
+      {!collapsed && (
+        <div style={{ margin: "16px 14px 4px", background: "#FFF8F8", borderRadius: 14, padding: "12px 14px", border: "1px solid rgba(153,8,3,0.1)" }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "#990803", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8, opacity: 0.65 }}>Kết quả của em</div>
+          <div style={{ display: "flex", gap: 10 }}>
+            {[{ icon: "⚡", val: "285", label: "XP" }, { icon: "🔥", val: "7", label: "Ngày" }, { icon: "🏅", val: "18", label: "HCV" }].map(s => (
+              <div key={s.label} style={{ flex: 1, textAlign: "center" }}>
+                <div style={{ fontSize: 18 }}>{s.icon}</div>
+                <div style={{ fontSize: 15, fontWeight: 900, color: "#990803", lineHeight: 1.1 }}>{s.val}</div>
+                <div style={{ fontSize: 9, color: "#9ca3af", fontWeight: 600 }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop: 10, background: "rgba(153,8,3,0.08)", borderRadius: 99, height: 5, overflow: "hidden" }}>
+            <div style={{ width: "71%", height: "100%", background: "linear-gradient(90deg,#990803,#c8a84e)", borderRadius: 99 }} />
+          </div>
+          <div style={{ fontSize: 9, color: "#9ca3af", marginTop: 4, textAlign: "right" }}>285 / 400 XP</div>
+        </div>
+      )}
+
+      {/* Nav */}
+      <nav className="flex-1 overflow-y-auto py-3 px-2" style={{ scrollbarWidth: "thin" }}>
+        {allItems.map(item => {
+          const emoji = STUDENT_NAV_EMOJI[item.to] ?? "📌";
+          return (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              title={collapsed ? item.label : undefined}
+              className={({ isActive }) => `flex items-center gap-3 rounded-xl cursor-pointer mb-0.5 ${collapsed ? "justify-center py-3 px-0" : "px-3 py-2"} ${isActive ? "st-active" : "st-item"}`}
+              style={{ background: "transparent" }}
+            >
+              {({ isActive }) => (<>
+              <div className="st-icon" style={{
+                width: 34, height: 34, borderRadius: 9, flexShrink: 0,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 19,
+                background: isActive ? "rgba(153,8,3,0.1)" : "#f3f4f6",
+                transition: "background 0.15s",
+              }}>{emoji}</div>
+              {!collapsed && (
+                <>
+                  <span style={{ flex: 1, fontSize: 13, fontWeight: isActive ? 700 : 500 }}>{item.label}</span>
+                  {item.badge && (
+                    <span style={{ fontSize: 10, fontWeight: 800, padding: "2px 7px", borderRadius: 99, background: "rgba(153,8,3,0.1)", color: "#990803" }}>{item.badge}</span>
+                  )}
+                </>
+              )}
+              </>)}
+            </NavLink>
+          );
+        })}
+      </nav>
+
+      {/* Footer: user info */}
+      <div style={{ padding: "12px 14px 14px", borderTop: "1px solid #e5e7eb" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, justifyContent: collapsed ? "center" : "flex-start" }}>
+          <div style={{
+            width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 12, fontWeight: 800, color: "#fff",
+            background: "linear-gradient(135deg,#990803,#c8a84e)",
+            boxShadow: "0 2px 8px rgba(153,8,3,0.25)",
+          }}>{user?.initials || "?"}</div>
+          {!collapsed && (
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#111827", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{user?.name || "Học sinh"}</div>
+              <div style={{ fontSize: 10, color: "#9ca3af", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{user?.tenantName || ""}</div>
+            </div>
+          )}
+        </div>
+      </div>
+    </aside>
+  );
+}
 
 /* ================================================================ */
 /*  LAYOUT — Geleximco STEM Platform                                 */
@@ -87,8 +222,16 @@ const breadcrumbMap: Record<string, string> = {
   profile: "Hồ sơ",
   settings: "Cài đặt",
   notifications: "Thông báo",
+  messages: "Tin nhắn",
   announcements: "Bảng tin",
   "ai-buddy": "AI-Buddy",
+  courses: "Khóa học",
+  forum: "Diễn đàn",
+  notebook: "Nhật ký học tập",
+  portfolio: "Hồ sơ học tập",
+  exercises: "Bài tập",
+  submit: "Nộp bài",
+  challenge: "STEM Challenge",
 };
 
 export function Layout() {
@@ -108,6 +251,16 @@ export function Layout() {
   const navGroups = user ? getNavGroups(user.role) : [];
   const roleInfo = user ? roleLabelsMap[user.role] : null;
   const tenantInfo = user ? tenantTypeLabelsMap[user.tenantType] : null;
+
+  // Student nav items (deduped)
+  const studentNavItems = (() => {
+    const seen = new Set<string>();
+    return navGroups.flatMap(g => g.items).filter(item => {
+      if (seen.has(item.to)) return false;
+      seen.add(item.to);
+      return true;
+    });
+  })();
 
   const toggleGroup = (title: string) => {
     setCollapsedGroups((prev) => ({ ...prev, [title]: !prev[title] }));
@@ -146,23 +299,31 @@ export function Layout() {
   const sidebarWidth = collapsed ? 72 : 260;
 
   const { theme, toggleTheme } = useTheme();
+  const { level: gradeLevel, setLevel: setGradeLevel } = useGradeLevel();
 
   return (
     <OperationsProvider>
     <div className="flex flex-col h-screen overflow-hidden bg-background">
       {/* ======== FULL-WIDTH HEADER ======== */}
       <header className="h-14 shrink-0 flex items-center px-3 lg:px-4 gap-3 z-50 border-b border-border bg-card">
-        <button
-          className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-[#990803] transition-colors cursor-pointer hidden lg:flex items-center justify-center"
-          onClick={() => setCollapsed(!collapsed)}
-          title={collapsed ? "Mở rộng sidebar" : "Thu gọn sidebar"}
-        >
-          {collapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
-        </button>
 
-        <button className="lg:hidden p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-[#990803] transition-colors cursor-pointer flex items-center justify-center" onClick={() => setMobileOpen(true)}>
-          <Menu className="w-5 h-5" />
-        </button>
+        {/* Sidebar toggle — hidden for students */}
+        {user?.role !== "student" && (
+          <button
+            className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-[#990803] transition-colors cursor-pointer hidden lg:flex items-center justify-center"
+            onClick={() => setCollapsed(!collapsed)}
+            title={collapsed ? "Mở rộng sidebar" : "Thu gọn sidebar"}
+          >
+            {collapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
+          </button>
+        )}
+
+        {/* Mobile menu — hidden for students */}
+        {user?.role !== "student" && (
+          <button className="lg:hidden p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-[#990803] transition-colors cursor-pointer flex items-center justify-center" onClick={() => setMobileOpen(true)}>
+            <Menu className="w-5 h-5" />
+          </button>
+        )}
 
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5 shrink-0">
@@ -179,10 +340,31 @@ export function Layout() {
           </div>
         </Link>
 
-        <div className="w-px h-7 bg-border hidden lg:block ml-1" />
+        <div className="w-px h-7 bg-border hidden lg:block mx-2" />
 
-        {/* Tenant badge */}
-        {user && tenantInfo && (
+        {/* Student top nav — tất cả cấp học trừ Mầm Non (inline in header) */}
+        {user?.role === "student" && gradeLevel !== "mamnon" && (
+          <nav style={{ display: "flex", alignItems: "stretch", height: "100%" }}>
+            <style>{`
+              .stn-h { display:flex; align-items:center; padding:0 14px; font-size:13px; font-weight:500; color:#6b7280; border-bottom:2.5px solid transparent; white-space:nowrap; text-decoration:none; transition:color .15s,border-color .15s; cursor:pointer; }
+              .stn-h:hover { color:#990803; border-bottom-color:rgba(153,8,3,0.3); background:rgba(153,8,3,0.03); }
+              .stn-h-on { color:#990803 !important; border-bottom-color:#990803 !important; font-weight:700 !important; }
+            `}</style>
+            {studentNavItems.map(item => (
+              <NavLink key={item.to} to={item.to} className={({ isActive }) => `stn-h${isActive ? " stn-h-on" : ""}`}>
+                {item.label}
+                {item.badge && (
+                  <span style={{ marginLeft: 5, fontSize: 9, fontWeight: 800, padding: "1px 6px", borderRadius: 99, background: "#990803", color: "#fff" }}>
+                    {item.badge}
+                  </span>
+                )}
+              </NavLink>
+            ))}
+          </nav>
+        )}
+
+        {/* Tenant badge — non-students only */}
+        {user?.role !== "student" && user && tenantInfo && (
           <div
             className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-md border"
             style={{
@@ -201,21 +383,34 @@ export function Layout() {
 
         {/* Search */}
         <div className="flex-1 ml-1">
-          <button
-            onClick={() => setSearchOpen(true)}
-            className="relative max-w-lg w-full flex items-center gap-2 pl-9 pr-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 border border-border transition-all text-left cursor-pointer"
-            style={{ fontSize: "13px" }}
-          >
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <span className="text-muted-foreground flex-1">Tìm kiếm trường, thiết bị, đơn hàng, bài giảng...</span>
-            <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-card rounded border border-border text-muted-foreground" style={{ fontSize: "10px" }}>
-              Ctrl+K
-            </kbd>
-          </button>
+          {user?.role !== "student" ? (
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="relative max-w-lg w-full flex items-center gap-2 pl-9 pr-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 border border-border transition-all text-left cursor-pointer"
+              style={{ fontSize: "13px" }}
+            >
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <span className="text-muted-foreground flex-1">Tìm kiếm trường, thiết bị, đơn hàng, bài giảng...</span>
+              <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-card rounded border border-border text-muted-foreground" style={{ fontSize: "10px" }}>
+                Ctrl+K
+              </kbd>
+            </button>
+          ) : null}
         </div>
 
         {/* Right actions */}
         <div className="flex items-center gap-1">
+          {/* Search icon — students only */}
+          {user?.role === "student" && (
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-[#990803] transition-colors hidden sm:flex cursor-pointer"
+              title="Tìm kiếm (Ctrl+K)"
+            >
+              <Search className="w-[18px] h-[18px]" />
+            </button>
+          )}
+
           <div className="relative" ref={notifRef}>
             <button
               className={`relative p-2 rounded-lg transition-colors cursor-pointer ${showNotifications ? "bg-secondary text-[#990803]" : "hover:bg-secondary text-muted-foreground hover:text-[#990803]"}`}
@@ -289,8 +484,48 @@ export function Layout() {
                   </div>
                   <p className="text-muted-foreground/70 mt-1" style={{ fontSize: "10px" }}>{user?.tenantName}</p>
                 </div>
+
+                {/* Bộ chọn cấp học — chỉ hiện khi role là student */}
+                {user?.role === "student" && (
+                  <div className="px-3 py-3 border-b border-border">
+                    <p className="text-muted-foreground mb-2" style={{ fontSize: "10px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                      🎓 Giao diện cấp học
+                    </p>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                      {(Object.entries(GRADE_LEVEL_META) as [GradeLevel, typeof GRADE_LEVEL_META[GradeLevel]][]).map(([key, m]) => {
+                        const active = gradeLevel === key;
+                        return (
+                          <button
+                            key={key}
+                            onClick={() => { setGradeLevel(key); setShowUserMenu(false); navigate("/student/dashboard"); }}
+                            style={{
+                              padding: "8px 6px",
+                              borderRadius: 10,
+                              border: `2px solid ${active ? m.color : "var(--border)"}`,
+                              background: active ? m.color : "transparent",
+                              cursor: "pointer",
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                              gap: 2,
+                              transition: "all 0.15s",
+                            }}
+                          >
+                            <span style={{ fontSize: 18 }}>{m.emoji}</span>
+                            <span style={{ fontSize: 11, fontWeight: 700, color: active ? "#fff" : "var(--foreground)" }}>{m.label}</span>
+                            <span style={{ fontSize: 9, color: active ? "rgba(255,255,255,0.8)" : "var(--muted-foreground)" }}>{m.age}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 <Link to="/shared/profile" className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-secondary text-left transition-colors" style={{ fontSize: "13px" }} onClick={() => setShowUserMenu(false)}>
                   <User className="w-4 h-4" /> Hồ sơ Cá nhân
+                </Link>
+                <Link to="/shared/messages" className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-secondary text-left transition-colors" style={{ fontSize: "13px" }} onClick={() => setShowUserMenu(false)}>
+                  <Mail className="w-4 h-4" /> Tin nhắn
                 </Link>
                 <Link to="/shared/settings" className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-secondary text-left transition-colors" style={{ fontSize: "13px" }} onClick={() => setShowUserMenu(false)}>
                   <SettingsIcon className="w-4 h-4" /> Cài đặt
@@ -321,9 +556,16 @@ export function Layout() {
       <div className="flex flex-1 min-h-0">
         {mobileOpen && <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setMobileOpen(false)} />}
 
+        {/* Student sidebar đã được chuyển lên top nav — không render sidebar cho học sinh */}
+
+        {/* Regular sidebar — non-students only */}
         <aside
           className={`fixed lg:static inset-y-0 left-0 z-50 lg:z-auto flex flex-col shrink-0 transition-all duration-300 ease-in-out overflow-hidden bg-card border-r border-border ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
-          style={{ width: mobileOpen ? 260 : sidebarWidth, top: mobileOpen ? 0 : undefined }}
+          style={{
+            width: mobileOpen ? 260 : sidebarWidth,
+            top: mobileOpen ? 0 : undefined,
+            display: user?.role === "student" ? "none" : undefined,
+          }}
         >
           <div className="lg:hidden flex items-center justify-between px-4 h-14 border-b border-border shrink-0">
             <div className="flex items-center gap-2.5">
